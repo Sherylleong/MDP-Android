@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
@@ -52,6 +53,8 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 
 data class Coord(val x: Int, val y: Int)
 class MainActivity : ComponentActivity() {
@@ -107,8 +110,11 @@ fun Grid(coordsList: MutableList<Coord>,
 ) {
     val rows = 20
     val columns = 20
-    val buttonSize=4.dp
     LazyVerticalGrid(columns = GridCells.Fixed(columns+2),
+        contentPadding = PaddingValues(
+            start = 11.2.dp,
+            end = 11.2.dp,
+        ),
     ) {
         items((rows + 2) * (columns + 2)) { index ->
             val row = index / (columns + 2)
@@ -121,34 +127,54 @@ fun Grid(coordsList: MutableList<Coord>,
             val selectedColor = Color(0xFFFF3D00)
             if (border){
                 if ((col==0) and (row >= 1) and (row <= columns)) { // bottom border labels
-                    Box(
+                    Box(modifier = Modifier
+                        .aspectRatio(1f)
+                        .wrapContentHeight()
+                        //.border(width = 1.dp, color = Color.White)
+                        .fillMaxSize()
                     ){
                         Text("$row",
                             textAlign = TextAlign.Center,
+                            fontSize = 10.sp,
                             modifier = Modifier
+                                .aspectRatio(1f)
                                 .wrapContentHeight()
+                                //.border(width = 1.dp, color = Color.White)
                                 .fillMaxSize()
+
 
 
                             )
                     }
                 }
                 else if ((row==columns+1) and (col >= 1) and (col <= columns)) { // leftmost border labels
-                    Box(
+                    Box(modifier = Modifier
+                        .aspectRatio(1f)
+                        .wrapContentHeight()
+                        //.border(width = 1.dp, color = Color.White)
+                        .fillMaxSize()
                     ){
                         Text("$col",
                             textAlign = TextAlign.Center,
+                            fontSize = 10.sp,
                             modifier = Modifier
-
                                 .wrapContentHeight()
+                                //.border(width = 1.dp, color = Color.White)
                                 .fillMaxSize()
+
+
                         )
                     }
                 }
                 else { // other borders
-                    Box(
+                    Box(modifier = Modifier
+                        .aspectRatio(1f)
+                        .wrapContentHeight()
+                        //.border(width = 1.dp, color = Color.White)
+                        .fillMaxSize()
                     ){
                         Text("")
+
                     }
                 }
             }
@@ -157,6 +183,8 @@ fun Grid(coordsList: MutableList<Coord>,
                     modifier = Modifier
                         .aspectRatio(1f)
                         .background(if (isSelected) selectedColor else backgroundColor)
+                        .fillMaxSize()
+                        //.border(width = 0.5.dp, color = Color.White)
                         .dragAndDropTarget(
                             shouldStartDragAndDrop = { event ->
                                 event
@@ -253,3 +281,6 @@ fun GridLog(coordsList: List<Coord>, modifier: Modifier = Modifier) {
         }
     }
 }
+
+
+
