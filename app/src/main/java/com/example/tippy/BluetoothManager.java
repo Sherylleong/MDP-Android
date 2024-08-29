@@ -25,7 +25,7 @@ public class BluetoothManager {
 
     private static final String TAG = "Bluetooth";
     public static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private BluetoothDevice myDevice;
+    public static BluetoothDevice myDevice;
     private final BluetoothAdapter myBluetoothAdapter;
     private UUID deviceUUID;
     private ConnectThread myConnectThread;
@@ -72,8 +72,8 @@ public class BluetoothManager {
                 }
 
                 try {
-                    Bluetooth myBluetoothActivity = (Bluetooth) mContext;
-                    myBluetoothActivity.runOnUiThread(() -> Toast.makeText(mContext,
+                    Bluetooth myBluetoothActivity = (Bluetooth) myContext;
+                    myBluetoothActivity.runOnUiThread(() -> Toast.makeText(myContext,
                             "Failed to connect to the Device.", Toast.LENGTH_SHORT).show());
                 } catch (Exception z) {
                     z.printStackTrace();
