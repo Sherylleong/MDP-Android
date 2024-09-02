@@ -3,6 +3,7 @@ package com.example.tippy
 import android.content.ClipData
 import android.content.ClipDescription
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -59,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 
+
 data class Coord(val x: Int, val y: Int)
 data class GridObstacle(val coord: Coord, val number: String, val direction: String?)
 class MainActivity : ComponentActivity() {
@@ -68,6 +70,9 @@ class MainActivity : ComponentActivity() {
         println("OnCreate")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        setContentView(R.layout.home);
+
+
         setContent {
             TippyTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

@@ -20,6 +20,9 @@
         android:theme="@style/Theme.Tippy"
         tools:targetApi="31">
         <activity
+            android:name=".Main"
+            android:exported="false" />
+        <activity
             android:name=".Bluetooth"
             android:exported="false" />
         <activity
