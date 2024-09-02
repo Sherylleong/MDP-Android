@@ -2,6 +2,7 @@ package com.example.tippy
 
 import android.content.ClipData
 import android.content.ClipDescription
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.Toast
@@ -72,15 +73,38 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.home);
 
+        val arenaButton: ImageButton = findViewById(R.id.arena_button)
+        val bluetoothButton: ImageButton = findViewById(R.id.bluetooth_button)
+        val messageButton: ImageButton = findViewById(R.id.message_button)
 
-        setContent {
-            TippyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(viewModel = viewModel)
-                }
-            }
-        }
+//        arenaButton.setOnClickListener { openArenaPage() }
+        bluetoothButton.setOnClickListener { openBluetoothPage() }
+        messageButton.setOnClickListener { openMessagePage() }
+
+//        setContent {
+//            TippyTheme {
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    MainScreen(viewModel = viewModel)
+//                }
+//            }
+//        }
     }
+
+//    private fun openArenaPage() {
+//        val intent = Intent(this, MainScreen(viewModel = viewModel)::class.java)
+//        startActivity(intent)
+//    }
+
+    private fun openBluetoothPage() {
+        val intent = Intent(this, Bluetooth::class.java)
+        startActivity(intent)
+    }
+
+    private fun openMessagePage() {
+        val intent = Intent(this, Message::class.java)
+        startActivity(intent)
+    }
+
     override fun onStart() {
         super.onStart()
         println("onStart")

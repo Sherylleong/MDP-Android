@@ -61,38 +61,23 @@ public class Bluetooth extends AppCompatActivity {
     boolean retryConnection = false;
     Handler reconnectionHandler = new Handler();
 
-    Runnable reconnectionRunnable = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                if (!BluetoothManager.BluetoothConnectionStatus) {
-                    startBTConnection(myDevice, myUUID);
-                    Toast.makeText(Bluetooth.this, "Reconnection Success", Toast.LENGTH_SHORT).show();
-
-                }
-                reconnectionHandler.removeCallbacks(reconnectionRunnable);
-                retryConnection = false;
-            } catch (Exception e) {
-                Toast.makeText(Bluetooth.this, "Failed to reconnect, retry in 5s", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.bluetooth);
+        Log.d(TAG,"CREATED");
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        SwitchCompat bluetoothSwitch = findViewById(R.id.bluetoothSwitch);
-        if(myBluetoothAdapter.isEnabled()){
-            bluetoothSwitch.setChecked(true);
-            bluetoothSwitch.setText("ON");
-        }
+//        SwitchCompat bluetoothSwitch = findViewById(R.id.bluetoothSwitch);
+//        if(myBluetoothAdapter.isEnabled()){
+//            bluetoothSwitch.setChecked(true);
+//            bluetoothSwitch.setText("ON");
+//        }
 
         listOfAvailableDevices = findViewById(R.id.list_of_available_devices);
         listOfPairedDevices = findViewById(R.id.list_of_paired_devices);
@@ -148,50 +133,50 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-        // on and off bluetooth switch
-        bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
-                if (isChecked) {
-                    compoundButton.setText("ON");
-                } else {
-                    compoundButton.setText("OFF");
-                }
-
-                if (myBluetoothAdapter == null) {
-                    Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
-                    Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
-                            .show();
-                    compoundButton.setChecked(false);
-                } else {
-                    if (!myBluetoothAdapter.isEnabled()) {
-                        Log.d(TAG, "enableDisableBT: enabling Bluetooth");
-                        Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
-
-                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
-                        startActivity(discoverableIntent);
-
-                        compoundButton.setChecked(true);
-
-                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-                        registerReceiver(receiverHandleOnOff, BTIntent);
-
-                        IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-                        registerReceiver(receiverHandleScan, discoverIntent);
-                    }
-                    if (myBluetoothAdapter.isEnabled()) {
-                        Log.d(TAG, "enableDisableBT: disabling Bluetooth");
-                        myBluetoothAdapter.disable();
-
-                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-                        registerReceiver(receiverHandleOnOff, BTIntent);
-                    }
-                }
-            }
-        });
+//        // on and off bluetooth switch
+//        bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @SuppressLint("MissingPermission")
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+//                Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
+//                if (isChecked) {
+//                    compoundButton.setText("ON");
+//                } else {
+//                    compoundButton.setText("OFF");
+//                }
+//
+//                if (myBluetoothAdapter == null) {
+//                    Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
+//                    Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
+//                            .show();
+//                    compoundButton.setChecked(false);
+//                } else {
+//                    if (!myBluetoothAdapter.isEnabled()) {
+//                        Log.d(TAG, "enableDisableBT: enabling Bluetooth");
+//                        Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
+//
+//                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
+//                        startActivity(discoverableIntent);
+//
+//                        compoundButton.setChecked(true);
+//
+//                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+//                        registerReceiver(receiverHandleOnOff, BTIntent);
+//
+//                        IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+//                        registerReceiver(receiverHandleScan, discoverIntent);
+//                    }
+//                    if (myBluetoothAdapter.isEnabled()) {
+//                        Log.d(TAG, "enableDisableBT: disabling Bluetooth");
+//                        myBluetoothAdapter.disable();
+//
+//                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+//                        registerReceiver(receiverHandleOnOff, BTIntent);
+//                    }
+//                }
+//            }
+//        });
 
         // connect button
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -221,6 +206,24 @@ public class Bluetooth extends AppCompatActivity {
         });
 
     }
+
+    Runnable reconnectionRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (!BluetoothManager.BluetoothConnectionStatus) {
+                    startBTConnection(myDevice, myUUID);
+                    Toast.makeText(Bluetooth.this, "Reconnection Success", Toast.LENGTH_SHORT).show();
+
+                }
+                reconnectionHandler.removeCallbacks(reconnectionRunnable);
+                retryConnection = false;
+            } catch (Exception e) {
+                Toast.makeText(Bluetooth.this, "Failed to reconnect, retry in 5s", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
 
     // Search Button
     @SuppressLint("MissingPermission")
