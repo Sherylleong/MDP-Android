@@ -150,7 +150,6 @@ public class BluetoothManager {
         public void run(){
             byte[] buffer = new byte[1024];
             int bytes;
-            StringBuilder messageBuffer = new StringBuilder();
 
             while (true){
                 try {
@@ -167,9 +166,7 @@ public class BluetoothManager {
 
                     connectionStatus = new Intent("ConnectionStatus");
                     connectionStatus.putExtra("Status", "disconnected");
-//                    TextView status = MainActivity.getBluetoothStatus();
-//                    status.setText(R.string.bt_disconnect);
-//                    status.setTextColor(Color.RED);
+
                     connectionStatus.putExtra("Device", myDevice);
                     LocalBroadcastManager.getInstance(myContext).sendBroadcast(connectionStatus);
                     BluetoothConnectionStatus = false;

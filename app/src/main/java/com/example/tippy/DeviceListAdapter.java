@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import java.util.ArrayList;
+import android.annotation.SuppressLint;
 
 import com.example.tippy.R;
 
@@ -26,6 +27,7 @@ public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
         myViewResourceId = tvResourceId;
     }
 
+    @SuppressLint("MissingPermission")
     public View getView(int position, View convertView, ViewGroup parent) {
         Log.d("DeviceListAdapter", "Getting view");
         convertView = myLayoutInflater.inflate(myViewResourceId, null);

@@ -8,10 +8,6 @@ import android.annotation.SuppressLint;
 
 
 import androidx.activity.EdgeToEdge;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -23,7 +19,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,9 +27,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.SwitchCompat;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -50,7 +45,7 @@ public class Bluetooth extends AppCompatActivity {
     public ArrayList<BluetoothDevice> myPairedBTDevices;
     public DeviceListAdapter myNewDeviceListAdapter;
     public DeviceListAdapter myPairedDeviceListAdapter;
-    TextView connStatusTextView;
+    TextView connectionStatus;
     ListView listOfAvailableDevices;
     ListView listOfPairedDevices;
     Button connectButton;
@@ -92,11 +87,8 @@ public class Bluetooth extends AppCompatActivity {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-        int width = dm.widthPixels;
-        int height = dm.heightPixels;
-
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Switch bluetoothSwitch = findViewById(R.id.bluetoothSwitch);
+        SwitchCompat bluetoothSwitch = findViewById(R.id.bluetoothSwitch);
         if(myBluetoothAdapter.isEnabled()){
             bluetoothSwitch.setChecked(true);
             bluetoothSwitch.setText("ON");
@@ -214,9 +206,9 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-        connStatusTextView = (TextView) findViewById(R.id.connStatusTextView);
+        connectionStatus = (TextView) findViewById(R.id.connectionStatus);
         connStatus = "Disconnected";
-        connStatusTextView.setText(connStatus);
+        connectionStatus.setText(connStatus);
 
         myDialog = new ProgressDialog(Bluetooth.this);
         myDialog.setMessage("Waiting for other device to reconnect...");
@@ -228,14 +220,63 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
+    }
+
+    // Search Button
+    @SuppressLint("MissingPermission")
+    public void scanForDevices(View view) {
+        Log.d(TAG, "toggleButton: Scanning for unpaired devices.");
+        myNewBTDevices.clear();
+        if (myBluetoothAdapter != null) {
+            if (!myBluetoothAdapter.isEnabled()) {
+                Toast.makeText(Bluetooth.this, "Please turn on Bluetooth first!", Toast.LENGTH_SHORT).show();
+            }
+            if (myBluetoothAdapter.isDiscovering()) {
+                myBluetoothAdapter.cancelDiscovery();
+                Log.d(TAG, "toggleButton: Cancelling Discovery.");
+                checkBTPermissions();
+
+                myBluetoothAdapter.startDiscovery();
+                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
+            }
+            else if (!myBluetoothAdapter.isDiscovering()) {
+                checkBTPermissions();
+
+                myBluetoothAdapter.startDiscovery();
+                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
+            }
+
+            myPairedBTDevices.clear();
+            Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
+            Log.d(TAG, "toggleButton: Number of paired devices found: " + pairedDevices.size());
+
+            for (BluetoothDevice d : pairedDevices) {
+                Log.d(TAG, "Paired Devices: " + d.getName() + " : " + d.getAddress());
+                myPairedBTDevices.add(d);
+                myPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view,
+                        myPairedBTDevices);
+                listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
+            }
+        }
+    }
+
+    private void checkBTPermissions() {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
+            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
+            if (permissionCheck != 0) {
+                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
+            }
+        } else {
+            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
+        }
     }
 
     private final BroadcastReceiver receiverHandleOnOff = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
+        @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
@@ -250,7 +291,6 @@ public class Bluetooth extends AppCompatActivity {
                         break;
                     case BluetoothAdapter.STATE_ON:
                         Log.d(TAG, "receiverHandleOnOff: STATE ON");
-
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:
                         Log.d(TAG, "receiverHandleOnOff: STATE TURNING ON");
@@ -261,6 +301,8 @@ public class Bluetooth extends AppCompatActivity {
     };
 
     private final BroadcastReceiver receiverHandleScan = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
+        @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
@@ -288,6 +330,7 @@ public class Bluetooth extends AppCompatActivity {
     };
 
     private final BroadcastReceiver receiverHandleNewDevices = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
@@ -306,18 +349,29 @@ public class Bluetooth extends AppCompatActivity {
     };
 
     private final BroadcastReceiver receiverHandlePairing = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
-                BluetoothDevice myDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                BluetoothDevice myNewDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
                 if(myDevice.getBondState() == BluetoothDevice.BOND_BONDED){
                     Log.d(TAG, "BOND_BONDED.");
                     Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice.getName(), Toast.LENGTH_SHORT).show();
-                    myDevice = myDevice;
-                    Scanning();
+                    myDevice = myNewDevice;
 
+                    myPairedBTDevices.clear();
+                    Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
+                    Log.d(TAG, "toggleButton: Number of paired devices found: "+ pairedDevices.size());
+
+                    for(BluetoothDevice d : pairedDevices){
+                        Log.d(TAG, "Paired Devices: " + d.getName() + " : " + d.getAddress());
+                        myPairedBTDevices.add(d);
+                        myPairedDeviceListAdapter = new DeviceListAdapter(Bluetooth.this, R.layout.device_adapter_view, myPairedBTDevices);
+                        listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
+                    }
 
                 }
                 if(myDevice.getBondState() == BluetoothDevice.BOND_BONDING){
@@ -331,6 +385,7 @@ public class Bluetooth extends AppCompatActivity {
     };
 
     private final BroadcastReceiver receiverHandleConnections = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
             BluetoothDevice myDevice = intent.getParcelableExtra("Device");
@@ -348,21 +403,20 @@ public class Bluetooth extends AppCompatActivity {
                 Log.d(TAG, "receiverHandleConnections: Device now connected to "+myDevice.getName());
                 Toast.makeText(Bluetooth.this, "Device now connected to "+myDevice.getName(), Toast.LENGTH_SHORT).show();
                 editor.putString("connStatus", "Connected to " + myDevice.getName());
-                connStatusTextView.setText("Connected to " + myDevice.getName());
+                connectionStatus.setText("Connected to " + myDevice.getName());
 
             }
-            else if(status.equals("disconnected") && retryConnection == false){
+            else if(status.equals("disconnected") && !retryConnection){
                 Log.d(TAG, "receiverHandleConnections: Disconnected from "+myDevice.getName());
                 Toast.makeText(Bluetooth.this, "Disconnected from "+myDevice.getName(), Toast.LENGTH_SHORT).show();
                 myBluetoothConnection = new BluetoothManager(Bluetooth.this);
-//                myBluetoothConnection.startAcceptThread();
 
 
                 sharedPreferences = getApplicationContext().getSharedPreferences("Shared Preferences", Context.MODE_PRIVATE);
                 editor = sharedPreferences.edit();
                 editor.putString("connStatus", "Disconnected");
-                TextView connStatusTextView = findViewById(R.id.connStatusTextView);
-                connStatusTextView.setText("Disconnected");
+                TextView connectionStatus = findViewById(R.id.connectionStatus);
+                connectionStatus.setText("Disconnected");
 
                 editor.commit();
 
