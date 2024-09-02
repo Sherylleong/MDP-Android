@@ -37,12 +37,7 @@ public class Message extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverIncomingMessages, new IntentFilter("inputMessage"));
 
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage();
-            }
-        });
+        sendButton.setOnClickListener(v -> sendMessage());
     }
 
     public void sendMessage() {
