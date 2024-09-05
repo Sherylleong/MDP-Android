@@ -17,7 +17,7 @@ class MainViewModel : ViewModel() {
     var previewObstacle: GridObstacle =  GridObstacle(Coord(0,0), "1", null)
 
 
-    fun onValidDropObject() {
+    fun displayObstacleDialog() {
         isObstacleDialogShown = true
     }
 
@@ -26,6 +26,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun onConfirmObstacleDialog() {
+        obstaclesList.removeAll { it.coord == previewObstacle.coord }
+        obstaclesList.add(previewObstacle)
         isObstacleDialogShown = false
     }
 }

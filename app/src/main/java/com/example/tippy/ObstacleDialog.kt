@@ -58,7 +58,7 @@ import androidx.constraintlayout.compose.Dimension
 @Composable
 fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) {
     var text by remember { mutableStateOf(viewModel.previewObstacle.number) }
-    var obstacleDirectionPreview: String? by remember {mutableStateOf(null)}
+    var obstacleDirectionPreview: String? by remember {mutableStateOf(viewModel.previewObstacle.direction)}
     val constraints = ConstraintSet {
         val dialogbox = createRefFor("dialogBox")
         val objectPreview = createRefFor("objectPreview")
@@ -223,8 +223,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                         Button( modifier = Modifier,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                             onClick = {
-                                val obstacleToAdd = GridObstacle(viewModel.previewObstacle.coord, text, obstacleDirectionPreview)
-                                viewModel.obstaclesList.add(obstacleToAdd)
+                                viewModel.previewObstacle = GridObstacle(viewModel.previewObstacle.coord, text, obstacleDirectionPreview)
                                 onConfirm() }) {
                             Text("Confirm")
                         }

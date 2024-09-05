@@ -14,7 +14,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintVertical_bias="0.1"
-        android:background="@drawable/rounded_edges"
         android:scrollbars="vertical"
     />
 
@@ -22,7 +21,6 @@
         android:id="@+id/edit_message"
         android:layout_width="530dp"
         android:layout_height="50dp"
-        android:background="@drawable/rounded_edges"
         android:hint="   Enter message"
         android:textColorHint="@color/black"
         android:textColor="@color/black"
@@ -38,7 +36,6 @@
         android:id="@+id/send_button"
         android:layout_width="90dp"
         android:layout_height="50dp"
-        android:background="@drawable/rounded_edges"
         android:src="@drawable/baseline_send_24"
         app:layout_constraintTop_toBottomOf="@id/message_history"
         app:layout_constraintBottom_toBottomOf="parent"

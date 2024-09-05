@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,8 +37,12 @@ import androidx.compose.ui.draganddrop.DragAndDropTarget
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,6 +73,7 @@ fun Grid(
     val vehiclePos = viewModel.vehiclePos
     val rows = 20
     val columns = 20
+    var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
 
     LazyVerticalGrid(columns = GridCells.Fixed(columns+2),
         contentPadding = PaddingValues(
@@ -104,9 +110,6 @@ fun Grid(
                                 .wrapContentHeight()
                                 //.border(width = 1.dp, color = Color.White)
                                 .fillMaxSize()
-
-
-
                         )
                     }
                 }
@@ -150,6 +153,69 @@ fun Grid(
                         .aspectRatio(1f)
                         .background(if (hasObstacle != null) selectedColor else backgroundColor)
                         .fillMaxSize()
+                        .drawBehind {
+                            val strokeWidth = 5.dp.toPx() * density
+                            var start: Offset = Offset(0f, 0f)
+                            var end: Offset = Offset(0f, 0f)
+                            when (direction) {
+                                "north" -> {
+                                    start = Offset(0f, strokeWidth / 2)
+                                    end = Offset(size.width, strokeWidth / 2)
+                                }
+                                "south" -> {
+                                    start = Offset(0f, size.height - strokeWidth / 2)
+                                    end = Offset(size.width, size.height - strokeWidth / 2)
+                                }
+                                "east" -> {
+                                    start = Offset(size.width - strokeWidth / 2, 0f)
+                                    end = Offset(size.width - strokeWidth / 2, size.height)
+                                }
+                                "west" -> {
+                                    start = Offset(strokeWidth / 2,0f)
+                                    end = Offset(strokeWidth / 2, size.height)
+                                }
+                            }
+                            if (direction != null) {
+                                drawLine(
+                                    Color.Red,
+                                    start,
+                                    end,
+                                    strokeWidth
+                                )
+                            }
+                        }
+                        .clickable {
+                            if (hasObstacle != null) {
+                                viewModel.previewObstacle = hasObstacle
+                                viewModel.displayObstacleDialog()
+                                //Toast.makeText(context, "Error: An obstacle is already placed there!", Toast.LENGTH_SHORT).show()
+                                //obstaclesList.remove(coord)
+
+                            } else {
+                                //obstaclesList.add(Coord(col, row))
+                            }
+
+                            println("${obstaclesList}")
+                        }
+
+                        .dragAndDropSource { // if obstacle is there, can drag elsewhere
+                            if (hasObstacle != null) {
+                                detectDragGestures { change, dragAmount ->
+                                    draggedObstacleCoord = hasObstacle.coord
+                                    startTransfer(
+                                        transferData = DragAndDropTransferData(
+                                            clipData = ClipData.newPlainText(
+                                                "obstacle",
+                                                "existing"
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+
+                        }
+
+
                         //.border(width = 0.5.dp, color = Color.White)
 
                         .dragAndDropTarget(
@@ -166,42 +232,59 @@ fun Grid(
                                         val label = event.toAndroidDragEvent().clipDescription.label
                                         val text =
                                             event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
-                                        if (!obstaclesList.any {it.coord == coord}) {
-                                            viewModel.previewObstacle = GridObstacle(coord, "1", null)
-                                            viewModel.onValidDropObject()
-                                            // Toast.makeText(context, "Successfully placed obstacle!", Toast.LENGTH_SHORT).show()
 
-                                        } else {
-                                            Toast
-                                                .makeText(
-                                                    context,
-                                                    "Invalid: Something is already placed there!",
-                                                    Toast.LENGTH_SHORT
-                                                )
-                                                .show()
+                                        if (label == "obstacle") {
+                                            if (text == "new") {
+                                                if (!obstaclesList.any { it.coord == coord }) { // object not already there
+                                                    viewModel.previewObstacle =
+                                                        GridObstacle(coord, "1", null)
+                                                    viewModel.displayObstacleDialog()
+                                                    // Toast.makeText(context, "Successfully placed obstacle!", Toast.LENGTH_SHORT).show()
+
+                                                } else {
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "Invalid: Something is already placed there!",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                        .show()
+                                                }
+                                            } else { // existing drag
+                                                println(draggedObstacleCoord)
+                                                if ((!obstaclesList.any { it.coord == coord }) or (coord == draggedObstacleCoord) ) {
+                                                    val index = obstaclesList.indexOfFirst { it.coord == draggedObstacleCoord }
+                                                    obstaclesList[index] = GridObstacle(coord, obstaclesList[index].number, obstaclesList[index].direction)
+                                                } else {
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "Invalid: Something is already placed there!",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                        .show()
+                                                }
+
+                                            }
+
                                         }
                                         return true
                                     }
                                 }
                             }
                         )
-                        .clickable {
-                            if (hasObstacle != null) {
-                                //Toast.makeText(context, "Error: An obstacle is already placed there!", Toast.LENGTH_SHORT).show()
-                                //obstaclesList.remove(coord)
-
-                            } else {
-                                //obstaclesList.add(Coord(col, row))
-                            }
-
-                            println("${obstaclesList}")
-                        }
                 ) {
                     Text (
-                        "",
+                        number,
                         modifier = Modifier
                             .fillMaxSize()
-                            .wrapContentSize(Alignment.Center),
+                            .wrapContentSize(Alignment.Center)
+                            .wrapContentHeight(),
+
+                        style = TextStyle(
+                            color = Color.White,
+                            textAlign = TextAlign.Center // Center align the text
+                        ),
                     )
                 }
             }
@@ -233,11 +316,12 @@ fun ObstacleDraggable() {
             .dragAndDropSource {
                 detectTapGestures(
                     onPress = { offset ->
+
                         startTransfer(
                             transferData = DragAndDropTransferData(
                                 clipData = ClipData.newPlainText(
                                     "obstacle",
-                                    "north"
+                                    "new"
                                 )
                             )
                         )
@@ -264,6 +348,7 @@ fun CarDraggable() {
             .dragAndDropSource {
                 detectTapGestures(
                     onPress = { offset ->
+
                         startTransfer(
                             transferData = DragAndDropTransferData(
                                 clipData = ClipData.newPlainText(
