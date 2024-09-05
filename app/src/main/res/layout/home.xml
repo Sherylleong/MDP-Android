@@ -8,11 +8,11 @@
 
     <TextView
         android:id="@+id/welcome"
-        android:layout_width="600dp"
+        android:layout_width="500dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Hello World! Select one of the following to begin!"
-        android:textSize="50sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,7 +23,7 @@
 
     <ImageButton
         android:id="@+id/arena_button"
-        android:layout_width="500dp"
+        android:layout_width="460dp"
         android:layout_height="200dp"
         android:src="@drawable/arena_icon"
         android:scaleType="fitXY"
@@ -58,7 +58,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.3"
-        app:layout_constraintHorizontal_bias="0.25"
+        app:layout_constraintHorizontal_bias="0.15"
     />
 
 <!--    <TextView-->
@@ -87,7 +87,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.3"
-        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintHorizontal_bias="0.85"
         />
 
 <!--    <TextView-->
