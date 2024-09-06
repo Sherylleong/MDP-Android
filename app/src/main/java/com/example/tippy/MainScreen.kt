@@ -255,7 +255,10 @@ fun Grid(
                                                 println(draggedObstacleCoord)
                                                 if ((!obstaclesList.any { it.coord == coord }) or (coord == viewModel.draggedObstacleCoord) ) {
                                                     val index = obstaclesList.indexOfFirst { it.coord == viewModel.draggedObstacleCoord }
-                                                    obstaclesList[index] = GridObstacle(coord, obstaclesList[index].number, obstaclesList[index].direction)
+                                                    if (index != -1){
+                                                        obstaclesList[index] = GridObstacle(coord, obstaclesList[index].number, obstaclesList[index].direction)
+                                                    }
+
                                                 } else {
                                                     Toast
                                                         .makeText(

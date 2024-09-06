@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
         val bluetoothButton: ImageButton = findViewById(R.id.bluetooth_button)
         val messageButton: ImageButton = findViewById(R.id.message_button)
 
-//        arenaButton.setOnClickListener { openArenaPage() }
+        arenaButton.setOnClickListener { openArenaPage() }
         bluetoothButton.setOnClickListener { openBluetoothPage() }
         messageButton.setOnClickListener { openMessagePage() }
 
@@ -90,10 +90,10 @@ class MainActivity : ComponentActivity() {
 //        }
     }
 
-//    private fun openArenaPage() {
-//        val intent = Intent(this, MainScreen(viewModel = viewModel)::class.java)
-//        startActivity(intent)
-//    }
+    private fun openArenaPage() {
+        val intent = Intent(this, ArenaActivity::class.java)
+        startActivity(intent)
+    }
 
     private fun openBluetoothPage() {
         val intent = Intent(this, Bluetooth::class.java)
@@ -101,8 +101,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openMessagePage() {
-        val intent = Intent(this, Message::class.java)
-        startActivity(intent)
+        //val intent = Intent(this, Message::class.java)
+        //startActivity(intent)
     }
 
     override fun onStart() {
@@ -135,5 +135,3 @@ class MainActivity : ComponentActivity() {
         println("onRestart")
     }
 }
-
-

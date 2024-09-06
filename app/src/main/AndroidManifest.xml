@@ -45,7 +45,11 @@
             android:label="Message"
             android:exported="true"
             android:parentActivityName=".MainActivity"/>
-
+        <activity
+            android:name=".ArenaActivity"
+            android:label="ArenaActivity"
+            android:exported="true"
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>
