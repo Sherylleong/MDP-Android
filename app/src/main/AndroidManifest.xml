@@ -46,8 +46,8 @@
             android:exported="true"
             android:parentActivityName=".MainActivity"/>
         <activity
-            android:name=".ArenaActivity"
-            android:label="ArenaActivity"
+            android:name=".Arena"
+            android:label="Arena"
             android:exported="true"
             android:parentActivityName=".MainActivity"/>
     </application>
