@@ -47,8 +47,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openMessagePage() {
-        //val intent = Intent(this, Message::class.java)
-        //startActivity(intent)
+        val intent = Intent(this, Message::class.java)
+        startActivity(intent)
     }
 
     override fun onStart() {
