@@ -15,6 +15,7 @@ class MainViewModel : ViewModel() {
     var isObstacleDialogShown by mutableStateOf(false)
         private set
     var previewObstacle: GridObstacle =  GridObstacle(Coord(0,0), "1", null)
+    var draggedObstacleCoord by mutableStateOf<Coord?>(Coord(1,1))
 
 
     fun displayObstacleDialog() {

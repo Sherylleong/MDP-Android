@@ -73,7 +73,8 @@ fun Grid(
     val vehiclePos = viewModel.vehiclePos
     val rows = 20
     val columns = 20
-    var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
+    //var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
+    var draggedObstacleCoord= viewModel.draggedObstacleCoord
 
     LazyVerticalGrid(columns = GridCells.Fixed(columns+2),
         contentPadding = PaddingValues(
@@ -83,7 +84,7 @@ fun Grid(
         ),
     ) {
         items((rows + 2) * (columns + 2)) { index ->
-            val row = index / (columns + 2)
+            val row =  21 - (index / (columns + 2))
             val col = index % (columns + 2)
             val isDark = (row + col) % 2 == 0
             val coord = Coord(col, row)
@@ -95,7 +96,7 @@ fun Grid(
             val backgroundColor = if (isDark) Color(0xFF4CAF50) else Color(0xFF8BC34A)
             val selectedColor = Color.Black
             if (border){
-                if ((col==0) and (row >= 1) and (row <= columns)) { // bottom border labels
+                if ((col==0) and (row >= 1) and (row <= columns)) { // leftmost column labels
                     Box(modifier = Modifier
                         .aspectRatio(1f)
                         .wrapContentHeight()
@@ -113,7 +114,7 @@ fun Grid(
                         )
                     }
                 }
-                else if ((row==columns+1) and (col >= 1) and (col <= columns)) { // leftmost border labels
+                else if ((row==0) and (col >= 1) and (col <= columns)) { // bottom borders labels
                     Box(modifier = Modifier
                         .aspectRatio(1f)
                         .wrapContentHeight()
@@ -201,7 +202,8 @@ fun Grid(
                         .dragAndDropSource { // if obstacle is there, can drag elsewhere
                             if (hasObstacle != null) {
                                 detectDragGestures { change, dragAmount ->
-                                    draggedObstacleCoord = hasObstacle.coord
+                                    viewModel.draggedObstacleCoord = hasObstacle.coord
+                                    print(viewModel.draggedObstacleCoord)
                                     startTransfer(
                                         transferData = DragAndDropTransferData(
                                             clipData = ClipData.newPlainText(
@@ -225,9 +227,7 @@ fun Grid(
                                     .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
                             },
                             target = remember {
-
                                 object : DragAndDropTarget {
-
                                     override fun onDrop(event: DragAndDropEvent): Boolean {
                                         val label = event.toAndroidDragEvent().clipDescription.label
                                         val text =
@@ -251,9 +251,10 @@ fun Grid(
                                                         .show()
                                                 }
                                             } else { // existing drag
+                                                println(11)
                                                 println(draggedObstacleCoord)
-                                                if ((!obstaclesList.any { it.coord == coord }) or (coord == draggedObstacleCoord) ) {
-                                                    val index = obstaclesList.indexOfFirst { it.coord == draggedObstacleCoord }
+                                                if ((!obstaclesList.any { it.coord == coord }) or (coord == viewModel.draggedObstacleCoord) ) {
+                                                    val index = obstaclesList.indexOfFirst { it.coord == viewModel.draggedObstacleCoord }
                                                     obstaclesList[index] = GridObstacle(coord, obstaclesList[index].number, obstaclesList[index].direction)
                                                 } else {
                                                     Toast
@@ -296,9 +297,29 @@ fun Grid(
 
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridScreen(viewModel: MainViewModel) {
-    Column (horizontalAlignment = Alignment.CenterHorizontally,){
+    Column (horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.dragAndDropTarget(
+                shouldStartDragAndDrop = { event ->
+                    event
+                        .mimeTypes()
+                        .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                },
+            target = remember {
+                object : DragAndDropTarget {
+                    override fun onDrop(event: DragAndDropEvent): Boolean {
+                        val label = event.toAndroidDragEvent().clipDescription.label
+                        val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
+                        if ((label == "obstacle") and (text == "existing")) {
+
+                        }
+                        return true
+                    }
+                }
+            })
+    ){
         Grid(viewModel)
         ObstacleDraggable()
         GridLog(viewModel)
