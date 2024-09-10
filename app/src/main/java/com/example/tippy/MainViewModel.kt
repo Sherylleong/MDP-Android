@@ -11,11 +11,13 @@ import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
     val obstaclesList: MutableList<GridObstacle> = mutableStateListOf()
-    var vehiclePos: MutableState<GridObstacle?> = mutableStateOf(null)
+    var carPos: MutableState<GridCar> = mutableStateOf(GridCar(Coord(1,1), "north"))
+    var previewCar: GridCar = GridCar(Coord(1,1), "north")
     var isObstacleDialogShown by mutableStateOf(false)
         private set
     var previewObstacle: GridObstacle =  GridObstacle(Coord(0,0), "1", null)
     var draggedObstacleCoord by mutableStateOf<Coord?>(Coord(1,1))
+    var draggedOverCoord by mutableStateOf<Coord?>(null)
 
 
     fun displayObstacleDialog() {

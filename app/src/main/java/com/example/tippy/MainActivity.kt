@@ -64,6 +64,7 @@ import androidx.core.graphics.toColorInt
 
 data class Coord(val x: Int, val y: Int)
 data class GridObstacle(var coord: Coord, var number: String, var direction: String?)
+data class GridCar(var coord: Coord, var direction: String)
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
 

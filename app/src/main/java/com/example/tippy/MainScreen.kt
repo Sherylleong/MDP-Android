@@ -2,6 +2,7 @@ package com.example.tippy
 
 import android.content.ClipData
 import android.content.ClipDescription
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -10,11 +11,13 @@ import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,8 +25,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -31,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
@@ -38,17 +49,23 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.graphics.shapes.CornerRounding
+import androidx.graphics.shapes.RoundedPolygon
+import androidx.graphics.shapes.toPath
 import com.example.tippy.ui.theme.TippyTheme
-
+import kotlinx.coroutines.flow.callbackFlow
 
 
 @Composable
@@ -64,13 +81,13 @@ fun MainScreen(viewModel: MainViewModel){
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun Grid(
     viewModel: MainViewModel,
 ) {
     val obstaclesList = viewModel.obstaclesList
-    val vehiclePos = viewModel.vehiclePos
+    val carPos = viewModel.carPos
     val rows = 20
     val columns = 20
     //var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
@@ -82,6 +99,7 @@ fun Grid(
             start = 11.2.dp,
             end = 11.2.dp,
         ),
+        modifier = Modifier
     ) {
         items((rows + 2) * (columns + 2)) { index ->
             val row =  21 - (index / (columns + 2))
@@ -92,40 +110,57 @@ fun Grid(
             val number = hasObstacle?.number ?: ""
             val direction = hasObstacle?.direction
             val isSelectedVehicle = null
+            val panColor = Color.Red
+            var draggedOver by remember {mutableStateOf(false)}
             val border = (row == 0) or (col==0) or (row == columns+1) or (col == columns+1)
-            val backgroundColor = if (isDark) Color(0xFF4CAF50) else Color(0xFF8BC34A)
+            val backgroundColor = if (draggedOver) panColor else if (isDark) Color(0xFF4CAF50) else Color(0xFF8BC34A)
             val selectedColor = Color.Black
+
+
+
             if (border){
                 if ((col==0) and (row >= 1) and (row <= columns)) { // leftmost column labels
+                    var draggedOverRow = false
+                   if (coord.y == viewModel.draggedOverCoord?.y){
+                       draggedOverRow = true
+                   }
                     Box(modifier = Modifier
                         .aspectRatio(1f)
                         .wrapContentHeight()
                         //.border(width = 1.dp, color = Color.White)
                         .fillMaxSize()
+                        .background(if (draggedOverRow) Color.Red else Color.Transparent)
                     ){
                         Text("$row",
                             textAlign = TextAlign.Center,
                             fontSize = 10.sp,
+                            color = Color.White,
                             modifier = Modifier
                                 .aspectRatio(1f)
-                                .wrapContentHeight()
                                 //.border(width = 1.dp, color = Color.White)
                                 .fillMaxSize()
+                                .wrapContentHeight(align = Alignment.CenterVertically),
                         )
                     }
                 }
                 else if ((row==0) and (col >= 1) and (col <= columns)) { // bottom borders labels
+                    var draggedOverCol = false
+                    if (coord.x == viewModel.draggedOverCoord?.x){
+                        draggedOverCol = true
+                    }
                     Box(modifier = Modifier
                         .aspectRatio(1f)
                         .wrapContentHeight()
                         //.border(width = 1.dp, color = Color.White)
                         .fillMaxSize()
+                        .background(if (draggedOverCol) Color.Red else Color.Transparent)
                     ){
 
 
                         Text("$col",
                             textAlign = TextAlign.Center,
                             fontSize = 10.sp,
+                            color = Color.White,
                             modifier = Modifier
                                 .wrapContentHeight()
                                 //.border(width = 1.dp, color = Color.White)
@@ -154,6 +189,25 @@ fun Grid(
                         .aspectRatio(1f)
                         .background(if (hasObstacle != null) selectedColor else backgroundColor)
                         .fillMaxSize()
+                        .drawWithCache {
+                            val roundedPolygon = RoundedPolygon(
+                                numVertices = 3,
+                                radius = size.minDimension / 2,
+                                centerX = size.width / 2,
+                                centerY = size.height / 2,
+                                rounding = CornerRounding(
+                                    size.minDimension / 10f,
+                                    smoothing = 0.1f
+                                )
+                            )
+                            val roundedPolygonPath = roundedPolygon.toPath().asComposePath()
+                            onDrawBehind {
+                                if (coord == Coord(2,2)){
+                                    drawPath(roundedPolygonPath, color = Color.Blue)
+                                }
+
+                            }
+                        }
                         .drawBehind {
                             val strokeWidth = 5.dp.toPx() * density
                             var start: Offset = Offset(0f, 0f)
@@ -221,14 +275,19 @@ fun Grid(
                         //.border(width = 0.5.dp, color = Color.White)
 
                         .dragAndDropTarget(
+
                             shouldStartDragAndDrop = { event ->
                                 event
                                     .mimeTypes()
                                     .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
                             },
+
+
                             target = remember {
                                 object : DragAndDropTarget {
                                     override fun onDrop(event: DragAndDropEvent): Boolean {
+                                        draggedOver = false
+                                        viewModel.draggedOverCoord = null
                                         val label = event.toAndroidDragEvent().clipDescription.label
                                         val text =
                                             event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
@@ -274,6 +333,16 @@ fun Grid(
                                         }
                                         return true
                                     }
+
+                                    override fun onEntered(event: DragAndDropEvent) {
+                                        super.onEntered(event)
+                                        draggedOver=true
+                                        viewModel.draggedOverCoord = coord
+                                    }
+                                    override fun onExited(event: DragAndDropEvent) {
+                                        super.onExited(event)
+                                        draggedOver=false
+                                    }
                                 }
                             }
                         )
@@ -303,8 +372,10 @@ fun Grid(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridScreen(viewModel: MainViewModel) {
+    val context = LocalContext.current
     Column (horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.dragAndDropTarget(
+        modifier = Modifier.fillMaxSize()
+            .dragAndDropTarget(
                 shouldStartDragAndDrop = { event ->
                     event
                         .mimeTypes()
@@ -316,9 +387,21 @@ fun GridScreen(viewModel: MainViewModel) {
                         val label = event.toAndroidDragEvent().clipDescription.label
                         val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
                         if ((label == "obstacle") and (text == "existing")) {
-
+                            viewModel.obstaclesList.removeAll { it.coord == viewModel.draggedObstacleCoord }
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Obstacle removed",
+                                    Toast.LENGTH_SHORT
+                                )
+                                .show()
                         }
                         return true
+                    }
+
+                    override fun onEntered(event: DragAndDropEvent) {
+                        super.onEntered(event)
+                        viewModel.draggedOverCoord = null
                     }
                 }
             })
@@ -336,11 +419,11 @@ fun ObstacleDraggable() {
     Box (
         modifier = Modifier
             .background(color = Color.Red)
+            //.size(20.dp, 20.dp)
             //.heightIn(max = 30.dp)
             .dragAndDropSource {
                 detectTapGestures(
                     onPress = { offset ->
-
                         startTransfer(
                             transferData = DragAndDropTransferData(
                                 clipData = ClipData.newPlainText(
@@ -352,13 +435,7 @@ fun ObstacleDraggable() {
                     })
             }
 
-    ){
-        Text("Add Obstacle",
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .wrapContentHeight()
-        )
-    }
+    ){Text("Add Object")}
 }
 
 
@@ -372,7 +449,6 @@ fun CarDraggable() {
             .dragAndDropSource {
                 detectTapGestures(
                     onPress = { offset ->
-
                         startTransfer(
                             transferData = DragAndDropTransferData(
                                 clipData = ClipData.newPlainText(
@@ -385,13 +461,31 @@ fun CarDraggable() {
             }
 
     ){
-        Text("Add Obstacle",
+        Text("Drag to Add Obstacle",
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .wrapContentHeight()
         )
     }
 }
+
+@Composable
+fun CarButton() {
+    Box (
+        modifier = Modifier
+            .background(color = Color.Cyan)
+            //.heightIn(max = 30.dp)
+
+    ){
+        Text("Set Car Coordinates",
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .wrapContentHeight()
+        )
+    }
+}
+
+
 
 @Composable
 fun GridLog(viewModel: MainViewModel, modifier: Modifier = Modifier) {
