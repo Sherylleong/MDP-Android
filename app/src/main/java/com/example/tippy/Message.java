@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -14,9 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class Message extends AppCompatActivity {
-    private TextView messageDisplay;
+    TextView messageDisplay;
+    private final String TAG  = "Message";
 
-    private BroadcastReceiver receiverIncomingMessages = new BroadcastReceiver() {
+    BroadcastReceiver receiverIncomingMessages = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String incomingMessage = intent.getStringExtra("messageKey");
@@ -30,6 +32,7 @@ public class Message extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.message);
+        Log.d(TAG, "Message Page");
 
         messageDisplay = findViewById(R.id.message_history);
         ImageButton sendButton = findViewById(R.id.send_button);
@@ -42,6 +45,7 @@ public class Message extends AppCompatActivity {
     public void sendMessage() {
         EditText input = findViewById(R.id.edit_message);
         String message = input.getText().toString();
+        Log.d(TAG, message);
 
         if(isBluetoothConnected()){
             byte[] bytes = message.getBytes();
