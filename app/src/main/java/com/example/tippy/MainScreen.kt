@@ -55,8 +55,12 @@ import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
@@ -204,30 +208,25 @@ fun Grid(
                         .fillMaxSize()
                         .zIndex(if (coord == car.coord) 2f else 1f)
                         .drawWithCache { // draw car
-                            val roundedPolygon = RoundedPolygon(
-                                numVertices = 3,
-                                radius = (size.minDimension * 1.5).toFloat(),
-                                centerX = size.width / 2,
-                                centerY = size.height / 2,
-                                rounding = CornerRounding(
-                                    size.minDimension / 10f,
-                                    smoothing = 0.1f
-                                )
-                            )
-                            val roundedPolygonPath = roundedPolygon
-                                .toPath()
-                                .asComposePath()
-                            onDrawBehind {
-                                if (coord == viewModel.car.value.coord) {
-                                    val angle = when (viewModel.car.value.direction) {
-                                        "north" -> -90f
-                                        "east" -> 0f
-                                        "south" -> 90f
-                                        "west" -> 180f
-                                        else -> -90f // Default pointing up
+                            val width = size.width
+                            val height = size.height
+                            val path = Path().apply {
+                                moveTo(width / 2, -height) // Top middle
+                                lineTo(-width, 2*height)    // Bottom left
+                                lineTo(2*width, 2*height) // Bottom right
+                                close()
+                            }
+                                onDrawBehind {
+                                if (coord == car.coord) {
+                                    val angle = when (car.direction) {
+                                        "north" -> 0f
+                                        "east" -> 90f
+                                        "south" -> 180f
+                                        "west" -> -90f
+                                        else -> 0f // Default pointing up
                                     }
                                     rotate(degrees = angle) {
-                                        drawPath(roundedPolygonPath, color = Color.Blue)
+                                        drawPath(path, color = Color.Blue)
                                     }
 
                                 }
@@ -448,7 +447,9 @@ fun GridScreen(viewModel: MainViewModel) {
             verticalAlignment = Alignment.CenterVertically) {
             ObstacleDraggable()
             CarButton(viewModel)
+            ResetButton(viewModel)
         }
+        DPad(viewModel)
 
         GridLog(viewModel)
     }
@@ -480,36 +481,83 @@ fun ObstacleDraggable() {
     ){Text("Add Object")}
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CarDraggable() {
-    Box (
+fun ResetButton(viewModel: MainViewModel) {
+    Button(onClick = {
+    },
         modifier = Modifier
-            .background(color = Color.Cyan)
-            //.heightIn(max = 30.dp)
-            .dragAndDropSource {
-                detectTapGestures(
-                    onPress = { offset ->
-                        startTransfer(
-                            transferData = DragAndDropTransferData(
-                                clipData = ClipData.newPlainText(
-                                    "obstacle",
-                                    "north"
-                                )
-                            )
-                        )
-                    })
-            }
+        //.heightIn(max = 30.dp)
 
     ){
-        Text("Drag to Add Obstacle",
+        Text("Reset All",
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .wrapContentHeight()
         )
     }
 }
+
+@Composable
+fun DPad(viewModel: MainViewModel) {
+    val x = viewModel.car.value.coord.x
+    val y = viewModel.car.value.coord.y
+    Row{
+        Button(onClick = {
+            if (viewModel.car.value.direction != "north"){
+                viewModel.car.value = viewModel.car.value.copy(direction = "north")
+                viewModel.previewCar = viewModel.car.value
+            }
+            else {
+                if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y+1))
+            }
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+        ){DrawTriangleDPad(180f)}
+    }
+    Row{
+        Button(onClick = {
+            if (viewModel.car.value.direction != "west"){
+                viewModel.car.value = viewModel.car.value.copy(direction = "west")
+                viewModel.previewCar = viewModel.car.value
+            }
+            else {
+                if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x-1, y))
+            }
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+        ){DrawTriangleDPad(180f)}
+        Button(onClick = {
+            if (viewModel.car.value.direction != "east"){
+                viewModel.car.value = viewModel.car.value.copy(direction = "east")
+                viewModel.previewCar = viewModel.car.value
+            }
+            else {
+                if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x+1, y))
+            }
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+        ){DrawTriangleDPad(180f)}
+    }
+    Row{
+        Button(onClick = {
+            if (viewModel.car.value.direction != "south"){
+                viewModel.car.value = viewModel.car.value.copy(direction = "south")
+                viewModel.previewCar = viewModel.car.value
+            }
+            else {
+                if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y-1))
+            }
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+        ){DrawTriangleDPad(180f)}
+    }
+
+}
+
 
 @Composable
 fun CarButton(viewModel: MainViewModel) {
@@ -540,5 +588,25 @@ fun GridLog(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun DrawTriangleDPad(rotationDegrees: Float) {
+    androidx.compose.foundation.Canvas(
+        modifier = Modifier.size(100.dp)  // Adjust size as needed
+    ) {
+        drawIntoCanvas { canvas ->
+            canvas.rotate(rotationDegrees)
+            val path = Path().apply {
 
+                moveTo(0f, size.height)      // Bottom left
+                lineTo(size.width, size.height) // Bottom right
+                lineTo(size.width / 2, 0f)  // Top center
+                close()
+            }
+            canvas.drawPath(path, Paint().apply {
+                color = Color.Blue
+            })
+
+        }
+    }
+}
 

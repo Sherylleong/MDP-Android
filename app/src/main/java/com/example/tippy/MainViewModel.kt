@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
@@ -45,6 +46,10 @@ class MainViewModel : ViewModel() {
     fun onConfirmCarDialog() {
         car.value = previewCar
         isCarDialogShown = false
+    }
+
+    fun updateCarDirection(direction: String){
+        car.value = car.value.copy(direction = direction)
     }
 
     fun checkCoordCarCollide(coord: Coord, carCoord: Coord) : Boolean {
