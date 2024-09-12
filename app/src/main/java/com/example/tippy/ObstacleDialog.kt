@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,8 +43,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -158,9 +162,14 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                     }
                                 }
                         ) {
+                            val focusManager = LocalFocusManager.current
                             TextField (
                                 value = text,
-                                onValueChange = { text = it  },
+                                onValueChange = {
+                                    if (!(it.contains(" ") or it.contains(".") or it.contains(","))) {
+                                        text = it
+                                    }
+                                                },
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .wrapContentSize(Alignment.Center),
@@ -178,7 +187,15 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                     focusedIndicatorColor = Color.Transparent,
                                 ),
 
-                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        focusManager.clearFocus()
+                                    }
+                                )
                             )
                         }
 
@@ -240,8 +257,5 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
     }
 
 }
-
-
-
 
 

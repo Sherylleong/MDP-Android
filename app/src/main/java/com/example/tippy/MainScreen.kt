@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.view.MotionEvent
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,11 +13,14 @@ import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -53,6 +57,8 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +67,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.toPath
@@ -70,14 +77,18 @@ import kotlinx.coroutines.flow.callbackFlow
 
 @Composable
 fun MainScreen(viewModel: MainViewModel){
-        var previewCoord: Coord by remember { mutableStateOf(Coord(0, 0)) }
-        GridScreen(viewModel)
-        if (viewModel.isObstacleDialogShown) {
-            ObstacleDialog(onDismiss = {viewModel.onDismissObstacleDialog() },
-                onConfirm = {viewModel.onConfirmObstacleDialog()},
-                viewModel = viewModel)
+    var previewCoord: Coord by remember { mutableStateOf(Coord(0, 0)) }
+    GridScreen(viewModel)
+    if (viewModel.isObstacleDialogShown) {
+        ObstacleDialog(onDismiss = {viewModel.onDismissObstacleDialog() },
+            onConfirm = {viewModel.onConfirmObstacleDialog()},
+            viewModel = viewModel)
+}
+    if (viewModel.isCarDialogShown) {
+        CarDialog(onDismiss = {viewModel.onDismissCarDialog() },
+            onConfirm = {viewModel.onConfirmCarDialog()},
+            viewModel = viewModel)
     }
-
 }
 
 
@@ -87,12 +98,13 @@ fun Grid(
     viewModel: MainViewModel,
 ) {
     val obstaclesList = viewModel.obstaclesList
-    val carPos = viewModel.carPos
+    val car by remember { viewModel.car }
     val rows = 20
     val columns = 20
     //var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
-    var draggedObstacleCoord= viewModel.draggedObstacleCoord
-
+    var draggedObstacleCoord = viewModel.draggedObstacleCoord
+    var carPosXAbs by remember { mutableStateOf(1) }
+    var carPosYAbs by remember { mutableStateOf(1) }
     LazyVerticalGrid(columns = GridCells.Fixed(columns+2),
         contentPadding = PaddingValues(
             top = 15.dp,
@@ -101,6 +113,7 @@ fun Grid(
         ),
         modifier = Modifier
     ) {
+
         items((rows + 2) * (columns + 2)) { index ->
             val row =  21 - (index / (columns + 2))
             val col = index % (columns + 2)
@@ -187,12 +200,13 @@ fun Grid(
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .background(if (hasObstacle != null) selectedColor else backgroundColor)
+                        .background(if (hasObstacle != null) selectedColor  else backgroundColor)
                         .fillMaxSize()
-                        .drawWithCache {
+                        .zIndex(if (coord == car.coord) 2f else 1f)
+                        .drawWithCache { // draw car
                             val roundedPolygon = RoundedPolygon(
                                 numVertices = 3,
-                                radius = size.minDimension / 2,
+                                radius = (size.minDimension * 1.5).toFloat(),
                                 centerX = size.width / 2,
                                 centerY = size.height / 2,
                                 rounding = CornerRounding(
@@ -200,10 +214,22 @@ fun Grid(
                                     smoothing = 0.1f
                                 )
                             )
-                            val roundedPolygonPath = roundedPolygon.toPath().asComposePath()
+                            val roundedPolygonPath = roundedPolygon
+                                .toPath()
+                                .asComposePath()
                             onDrawBehind {
-                                if (coord == Coord(2,2)){
-                                    drawPath(roundedPolygonPath, color = Color.Blue)
+                                if (coord == viewModel.car.value.coord) {
+                                    val angle = when (viewModel.car.value.direction) {
+                                        "north" -> -90f
+                                        "east" -> 0f
+                                        "south" -> 90f
+                                        "west" -> 180f
+                                        else -> -90f // Default pointing up
+                                    }
+                                    rotate(degrees = angle) {
+                                        drawPath(roundedPolygonPath, color = Color.Blue)
+                                    }
+
                                 }
 
                             }
@@ -217,16 +243,19 @@ fun Grid(
                                     start = Offset(0f, strokeWidth / 2)
                                     end = Offset(size.width, strokeWidth / 2)
                                 }
+
                                 "south" -> {
                                     start = Offset(0f, size.height - strokeWidth / 2)
                                     end = Offset(size.width, size.height - strokeWidth / 2)
                                 }
+
                                 "east" -> {
                                     start = Offset(size.width - strokeWidth / 2, 0f)
                                     end = Offset(size.width - strokeWidth / 2, size.height)
                                 }
+
                                 "west" -> {
-                                    start = Offset(strokeWidth / 2,0f)
+                                    start = Offset(strokeWidth / 2, 0f)
                                     end = Offset(strokeWidth / 2, size.height)
                                 }
                             }
@@ -246,8 +275,9 @@ fun Grid(
                                 //Toast.makeText(context, "Error: An obstacle is already placed there!", Toast.LENGTH_SHORT).show()
                                 //obstaclesList.remove(coord)
 
-                            } else {
-                                //obstaclesList.add(Coord(col, row))
+                            } else if (viewModel.checkCoordCarCollide(coord, car.coord)) {
+                                println("aasdskajda")
+                                viewModel.displayCarDialog()
                             }
 
                             println("${obstaclesList}")
@@ -312,10 +342,15 @@ fun Grid(
                                             } else { // existing drag
                                                 println(11)
                                                 println(draggedObstacleCoord)
-                                                if ((!obstaclesList.any { it.coord == coord }) or (coord == viewModel.draggedObstacleCoord) ) {
-                                                    val index = obstaclesList.indexOfFirst { it.coord == viewModel.draggedObstacleCoord }
-                                                    if (index != -1){
-                                                        obstaclesList[index] = GridObstacle(coord, obstaclesList[index].number, obstaclesList[index].direction)
+                                                if ((!obstaclesList.any { it.coord == coord }) or (coord == viewModel.draggedObstacleCoord)) {
+                                                    val index =
+                                                        obstaclesList.indexOfFirst { it.coord == viewModel.draggedObstacleCoord }
+                                                    if (index != -1) {
+                                                        obstaclesList[index] = GridObstacle(
+                                                            coord,
+                                                            obstaclesList[index].number,
+                                                            obstaclesList[index].direction
+                                                        )
                                                     }
 
                                                 } else {
@@ -336,12 +371,13 @@ fun Grid(
 
                                     override fun onEntered(event: DragAndDropEvent) {
                                         super.onEntered(event)
-                                        draggedOver=true
+                                        draggedOver = true
                                         viewModel.draggedOverCoord = coord
                                     }
+
                                     override fun onExited(event: DragAndDropEvent) {
                                         super.onExited(event)
-                                        draggedOver=false
+                                        draggedOver = false
                                     }
                                 }
                             }
@@ -374,40 +410,46 @@ fun Grid(
 fun GridScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
     Column (horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .dragAndDropTarget(
                 shouldStartDragAndDrop = { event ->
                     event
                         .mimeTypes()
                         .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
                 },
-            target = remember {
-                object : DragAndDropTarget {
-                    override fun onDrop(event: DragAndDropEvent): Boolean {
-                        val label = event.toAndroidDragEvent().clipDescription.label
-                        val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
-                        if ((label == "obstacle") and (text == "existing")) {
-                            viewModel.obstaclesList.removeAll { it.coord == viewModel.draggedObstacleCoord }
-                            Toast
-                                .makeText(
-                                    context,
-                                    "Obstacle removed",
-                                    Toast.LENGTH_SHORT
-                                )
-                                .show()
+                target = remember {
+                    object : DragAndDropTarget {
+                        override fun onDrop(event: DragAndDropEvent): Boolean {
+                            val label = event.toAndroidDragEvent().clipDescription.label
+                            val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
+                            if ((label == "obstacle") and (text == "existing")) {
+                                viewModel.obstaclesList.removeAll { it.coord == viewModel.draggedObstacleCoord }
+                                Toast
+                                    .makeText(
+                                        context,
+                                        "Obstacle removed",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    .show()
+                            }
+                            return true
                         }
-                        return true
-                    }
 
-                    override fun onEntered(event: DragAndDropEvent) {
-                        super.onEntered(event)
-                        viewModel.draggedOverCoord = null
+                        override fun onEntered(event: DragAndDropEvent) {
+                            super.onEntered(event)
+                            viewModel.draggedOverCoord = null
+                        }
                     }
-                }
-            })
+                })
     ){
         Grid(viewModel)
-        ObstacleDraggable()
+        Row (horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically) {
+            ObstacleDraggable()
+            CarButton(viewModel)
+        }
+
         GridLog(viewModel)
     }
 }
@@ -470,10 +512,9 @@ fun CarDraggable() {
 }
 
 @Composable
-fun CarButton() {
-    Box (
+fun CarButton(viewModel: MainViewModel) {
+    Button(onClick = { viewModel.displayCarDialog() },
         modifier = Modifier
-            .background(color = Color.Cyan)
             //.heightIn(max = 30.dp)
 
     ){
