@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/message_history"
         android:layout_width="500dp"
-        android:layout_height="600dp"
+        android:layout_height="420dp"
         android:textColor="@color/black"
         android:background="@drawable/rounded_edges"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,11 +26,13 @@
         android:hint="   Enter message"
         android:textColorHint="@color/black"
         android:textColor="@color/black"
+        android:maxLines="1"
+        android:inputType="text"
         app:layout_constraintTop_toBottomOf="@id/message_history"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.25"
+        app:layout_constraintHorizontal_bias="0.19"
         app:layout_constraintVertical_bias="0.05"
     />
 
