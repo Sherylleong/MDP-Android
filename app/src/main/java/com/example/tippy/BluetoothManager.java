@@ -110,7 +110,7 @@ public class BluetoothManager {
     }
 
     private class ConnectedThread extends Thread{
-        private final BluetoothSocket mSocket;
+//        private final BluetoothSocket mSocket;
         private final InputStream inStream;
         private final OutputStream outStream;
         private boolean stopThread = false;
@@ -132,13 +132,12 @@ public class BluetoothManager {
 //            TextView device = MainActivity.getConnectedDevice();
 //            device.setText(myDevice.getName());
 
-            this.mSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
             try {
-                tmpIn = mSocket.getInputStream();
-                tmpOut = mSocket.getOutputStream();
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -177,22 +176,12 @@ public class BluetoothManager {
         }
 
         public void write(byte[] bytes){
-            String text = new String(bytes, Charset.defaultCharset());
+//            String text = new String(bytes, Charset.defaultCharset());
             try {
                 outStream.write(bytes);
-                Log.d(TAG, "Message out: "+text);
+                Log.d(TAG, "Message out: HELLO WORLD ");
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-        }
-
-        public void cancel(){
-            Log.d(TAG, "cancel: Closing Client Socket");
-            try{
-                this.stopThread = true;
-                mSocket.close();
-            } catch(IOException e){
-                Log.e(TAG, "cancel: Failed to close ConnectThread mSocket " + e.getMessage());
             }
         }
     }
@@ -207,4 +196,5 @@ public class BluetoothManager {
         Log.d(TAG, "write is called" );
         myConnectedThread.write(out);
     }
+
 }

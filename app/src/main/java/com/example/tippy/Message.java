@@ -21,10 +21,9 @@ public class Message extends AppCompatActivity {
     BroadcastReceiver receiverIncomingMessages = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String incomingMessage = intent.getStringExtra("messageKey");
-            if (incomingMessage != null) {
-                updateChatLog(incomingMessage);
-            }
+            Log.d(TAG, "RECEIVING");
+            String incomingMessage = intent.getStringExtra("receivedMessage");
+            updateChatLogRobot(incomingMessage);
         }
     };
 
@@ -37,7 +36,7 @@ public class Message extends AppCompatActivity {
         messageDisplay = findViewById(R.id.message_history);
         ImageButton sendButton = findViewById(R.id.send_button);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiverIncomingMessages, new IntentFilter("inputMessage"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverIncomingMessages, new IntentFilter("incomingMessage"));
 
         sendButton.setOnClickListener(v -> sendMessage());
     }
@@ -61,6 +60,11 @@ public class Message extends AppCompatActivity {
     public void updateChatLog(String message) {
         String currentText = messageDisplay.getText().toString();
         messageDisplay.setText(currentText + "\n[ME]" + message);
+    }
+
+    public void updateChatLogRobot(String message){
+        String currentText = messageDisplay.getText().toString();
+        messageDisplay.setText(currentText + "\n[Robot]" + message);
     }
 
     public boolean isBluetoothConnected() {
