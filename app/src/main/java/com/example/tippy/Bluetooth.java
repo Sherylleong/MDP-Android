@@ -30,6 +30,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.SwitchCompat;
+import android.widget.Switch;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class Bluetooth extends AppCompatActivity {
     public ArrayList<BluetoothDevice> myPairedBTDevices;
     public DeviceListAdapter myNewDeviceListAdapter;
     public DeviceListAdapter myPairedDeviceListAdapter;
-    TextView connectionStatus;
+    TextView connectionStatusTextView;
     ListView listOfAvailableDevices;
     ListView listOfPairedDevices;
     Button connectButton;
@@ -93,6 +94,12 @@ public class Bluetooth extends AppCompatActivity {
 
 
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        SwitchCompat bluetoothSwitch = findViewById(R.id.bluetoothSwitch);
+        if (myBluetoothAdapter.isEnabled()) {
+            bluetoothSwitch.setChecked(true);
+            bluetoothSwitch.setText("ON");
+        }
 //        TextView connectStatus = findViewById(R.id.connectionStatus);
 //        if(myBluetoothAdapter.isEnabled()){
 //            Log.d(TAG, "NO");
@@ -168,50 +175,50 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-//        // on and off bluetooth switch
-//        bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @SuppressLint("MissingPermission")
-//            @Override
-//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-//                Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
-//                if (isChecked) {
-//                    compoundButton.setText("ON");
-//                } else {
-//                    compoundButton.setText("OFF");
-//                }
-//
-//                if (myBluetoothAdapter == null) {
-//                    Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
-//                    Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
-//                            .show();
-//                    compoundButton.setChecked(false);
-//                } else {
-//                    if (!myBluetoothAdapter.isEnabled()) {
-//                        Log.d(TAG, "enableDisableBT: enabling Bluetooth");
-//                        Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
-//
-//                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
-//                        startActivity(discoverableIntent);
-//
-//                        compoundButton.setChecked(true);
-//
-//                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-//                        registerReceiver(receiverHandleOnOff, BTIntent);
-//
-//                        IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-//                        registerReceiver(receiverHandleScan, discoverIntent);
-//                    }
-//                    if (myBluetoothAdapter.isEnabled()) {
-//                        Log.d(TAG, "enableDisableBT: disabling Bluetooth");
-//                        myBluetoothAdapter.disable();
-//
-//                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-//                        registerReceiver(receiverHandleOnOff, BTIntent);
-//                    }
-//                }
-//            }
-//        });
+        // on and off bluetooth switch
+        bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
+                if (isChecked) {
+                    compoundButton.setText("ON");
+                } else {
+                    compoundButton.setText("OFF");
+                }
+
+                if (myBluetoothAdapter == null) {
+                    Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
+                    Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
+                            .show();
+                    compoundButton.setChecked(false);
+                } else {
+                    if (!myBluetoothAdapter.isEnabled()) {
+                        Log.d(TAG, "enableDisableBT: enabling Bluetooth");
+                        Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
+
+                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
+                        startActivity(discoverableIntent);
+
+                        compoundButton.setChecked(true);
+
+                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+                        registerReceiver(receiverHandleOnOff, BTIntent);
+
+                        IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+                        registerReceiver(receiverHandleScan, discoverIntent);
+                    }
+                    if (myBluetoothAdapter.isEnabled()) {
+                        Log.d(TAG, "enableDisableBT: disabling Bluetooth");
+                        myBluetoothAdapter.disable();
+
+                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+                        registerReceiver(receiverHandleOnOff, BTIntent);
+                    }
+                }
+            }
+        });
 
         // connect button
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -239,11 +246,11 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-        connectionStatus = (TextView) findViewById(R.id.connectionStatus);
+        connectionStatusTextView = (TextView) findViewById(R.id.connectionStatus);
 //        if(myDevice.getBondState() == BluetoothDevice.BOND_BONDED){
 //            connectionStatus.setText("Connected!!");
 //        }
-        connectionStatus.setText("Disconnected!");
+        connectionStatusTextView.setText("Disconnected!");
 
     }
 
@@ -373,6 +380,7 @@ public class Bluetooth extends AppCompatActivity {
                     myNewDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, myNewBTDevices);
                     listOfAvailableDevices.setAdapter(myNewDeviceListAdapter);
                 }
+
             }
         }
     };
@@ -385,12 +393,14 @@ public class Bluetooth extends AppCompatActivity {
 
             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
                 BluetoothDevice myNewDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                int bondState = myNewDevice.getBondState();
 
-                if(myDevice.getBondState() == BluetoothDevice.BOND_BONDED){
-                    Log.d(TAG, "BOND_BONDED.");
-                    connectionStatus.setText("Connected to: " + myDevice.getName());
-                    Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice.getName(), Toast.LENGTH_SHORT).show();
+                if (bondState == BluetoothDevice.BOND_BONDED){
                     myDevice = myNewDevice;
+                    Log.d(TAG, "BOND_BONDED to: " + myDevice + myUUID);
+                    connectionStatusTextView.setText("Connected to: " + myDevice.getName());
+                    Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice.getName(), Toast.LENGTH_SHORT).show();
+                    startConnection();
 
                     myPairedBTDevices.clear();
                     Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
@@ -404,10 +414,10 @@ public class Bluetooth extends AppCompatActivity {
                     }
 
                 }
-                if(myDevice.getBondState() == BluetoothDevice.BOND_BONDING){
+                if(bondState== BluetoothDevice.BOND_BONDING){
                     Log.d(TAG, "BOND_BONDING.");
                 }
-                if(myDevice.getBondState() == BluetoothDevice.BOND_NONE){
+                if(bondState == BluetoothDevice.BOND_NONE){
                     Log.d(TAG, "BOND_NONE.");
                 }
             }
@@ -434,7 +444,7 @@ public class Bluetooth extends AppCompatActivity {
                 Log.d(TAG, "receiverHandleConnections: Device now connected to "+myDevice.getName());
                 Toast.makeText(Bluetooth.this, "Device now connected to "+myDevice.getName(), Toast.LENGTH_SHORT).show();
                 editor.putString("connStatus", "Connected to " + myDevice.getName());
-                connectionStatus.setText("Connected to " + myDevice.getName());
+                connectionStatusTextView.setText("Connected to " + myDevice.getName());
 
             }
             else if(status.equals("disconnected") && !retryConnection){
@@ -446,8 +456,8 @@ public class Bluetooth extends AppCompatActivity {
                 sharedPreferences = getApplicationContext().getSharedPreferences("Shared Preferences", Context.MODE_PRIVATE);
                 editor = sharedPreferences.edit();
                 editor.putString("connStatus", "Disconnected");
-                TextView connectionStatus = findViewById(R.id.connectionStatus);
-                connectionStatus.setText("Disconnected");
+                TextView connectionStatusTextView = findViewById(R.id.connectionStatus);
+                connectionStatusTextView.setText("Disconnected");
 
                 editor.commit();
 
