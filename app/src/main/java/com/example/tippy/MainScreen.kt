@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -55,20 +56,27 @@ import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -511,9 +519,10 @@ fun DPad(viewModel: MainViewModel) {
                 if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y+1))
             }
         },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-        ){DrawTriangleDPad(180f)}
+
+
+            shape=TriangleShape()
+        ){}
     }
     Row{
         Button(onClick = {
@@ -525,9 +534,9 @@ fun DPad(viewModel: MainViewModel) {
                 if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x-1, y))
             }
         },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-        ){DrawTriangleDPad(180f)}
+            modifier = Modifier.graphicsLayer(rotationZ = -90f) ,
+            shape=TriangleShape()
+        ){}
         Button(onClick = {
             if (viewModel.car.value.direction != "east"){
                 viewModel.car.value = viewModel.car.value.copy(direction = "east")
@@ -537,9 +546,9 @@ fun DPad(viewModel: MainViewModel) {
                 if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x+1, y))
             }
         },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-        ){DrawTriangleDPad(180f)}
+            modifier = Modifier.graphicsLayer(rotationZ = 90f) ,
+            shape=TriangleShape()
+        ){}
     }
     Row{
         Button(onClick = {
@@ -551,9 +560,9 @@ fun DPad(viewModel: MainViewModel) {
                 if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y-1))
             }
         },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-        ){DrawTriangleDPad(180f)}
+            modifier = Modifier.graphicsLayer(rotationZ = 180f) ,
+            shape=TriangleShape()
+        ){}
     }
 
 }
@@ -566,7 +575,7 @@ fun CarButton(viewModel: MainViewModel) {
             //.heightIn(max = 30.dp)
 
     ){
-        Text("Set Car Coordinates",
+        Text("Set Car",
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .wrapContentHeight()
@@ -588,25 +597,33 @@ fun GridLog(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun DrawTriangleDPad(rotationDegrees: Float) {
-    androidx.compose.foundation.Canvas(
-        modifier = Modifier.size(100.dp)  // Adjust size as needed
-    ) {
-        drawIntoCanvas { canvas ->
-            canvas.rotate(rotationDegrees)
-            val path = Path().apply {
 
-                moveTo(0f, size.height)      // Bottom left
-                lineTo(size.width, size.height) // Bottom right
-                lineTo(size.width / 2, 0f)  // Top center
-                close()
-            }
-            canvas.drawPath(path, Paint().apply {
-                color = Color.Blue
-            })
+class TriangleShape(direction: String="north") : Shape {
+    val size = 100.dp
+    val angle = when (direction) {
+        "north" -> 0f
+        "east" -> 90f
+        "south" -> 180f
+        "west" -> -90f
+        else -> 0f // Default pointing up
+    }
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val width = size.width
+        val height = size.height
 
+
+
+        val path = Path().apply {
+            moveTo(width / 2f, 0f) // Top point
+            lineTo(0f, height) // Bottom left point
+            lineTo(width, height) // Bottom right point
+            close() // Close path to form a triangle
         }
+
+        return Outline.Generic(path)
     }
 }
-
