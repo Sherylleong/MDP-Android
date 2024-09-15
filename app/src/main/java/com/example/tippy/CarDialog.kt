@@ -152,17 +152,16 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                         .toPath()
                                         .asComposePath()
                                     onDrawBehind {
-                                            val angle = when (carDirectionPreview) {
-                                                "north" -> -90f
-                                                "east" -> 0f
-                                                "south" -> 90f
-                                                "west" -> 180f
-                                                else -> -90f // Default pointing up
-                                            }
-                                            rotate(degrees = angle) {
-                                                drawPath(roundedPolygonPath, color = Color.Blue)
-                                            }
-
+                                        val angle = when (carDirectionPreview) {
+                                            "north" -> -90f
+                                            "east" -> 0f
+                                            "south" -> 90f
+                                            "west" -> 180f
+                                            else -> -90f // Default pointing up
+                                        }
+                                        rotate(degrees = angle) {
+                                            drawPath(roundedPolygonPath, color = Color.Blue)
+                                        }
 
 
                                     }
@@ -311,6 +310,7 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                     }
                                     viewModel.previewCar = GridCar(Coord(x, y), carDirectionPreview)
                                     onConfirm()
+                                    sendMessage("ROBOT,${viewModel.previewCar.coord.x},${viewModel.previewCar.coord.x},${viewModel.previewCar.direction}")
                                 }
 
                                  }) {

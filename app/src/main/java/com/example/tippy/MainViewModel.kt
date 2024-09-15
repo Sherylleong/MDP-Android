@@ -11,10 +11,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
+    var status by mutableStateOf("Not connected")
     val obstaclesList: MutableList<GridObstacle> = mutableStateListOf()
     var car: MutableState<GridCar> = mutableStateOf(GridCar(Coord(2,2), "north"))
     var previewCar: GridCar = GridCar(Coord(2,2), "north")
     var isObstacleDialogShown by mutableStateOf(false)
+        private set
+    var obstacleDialogMode by mutableStateOf("add")
         private set
     var isCarDialogShown by mutableStateOf(false)
         private set
@@ -23,8 +26,9 @@ class MainViewModel : ViewModel() {
     var draggedOverCoord by mutableStateOf<Coord?>(null)
 
 
-    fun displayObstacleDialog() {
+    fun displayObstacleDialog(mode: String) {
         isObstacleDialogShown = true
+        obstacleDialogMode = mode
     }
 
     fun onDismissObstacleDialog() {

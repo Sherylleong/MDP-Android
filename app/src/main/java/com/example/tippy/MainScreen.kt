@@ -2,9 +2,8 @@ package com.example.tippy
 
 import android.content.ClipData
 import android.content.ClipDescription
-import android.view.MotionEvent
+import android.widget.TextView
 import android.widget.Toast
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,7 +11,6 @@ import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,28 +18,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,38 +43,36 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.graphics.shapes.CornerRounding
-import androidx.graphics.shapes.RoundedPolygon
-import androidx.graphics.shapes.toPath
-import com.example.tippy.ui.theme.TippyTheme
-import kotlinx.coroutines.flow.callbackFlow
 
+fun sendMessage(message: String) {
+    if (BluetoothManager.BluetoothConnectionStatus) {
+        val bytes = message.toByteArray()
+        BluetoothManager.write(bytes)
+    }
+}
 
 @Composable
 fun MainScreen(viewModel: MainViewModel){
+    if (!BluetoothManager.BluetoothConnectionStatus) {
+        viewModel.status = "Not connected"
+    }
+    else if (BluetoothManager.BluetoothConnectionStatus && viewModel.status == "Not connected") {
+        viewModel.status = "Connected and ready"
+    }
     var previewCoord: Coord by remember { mutableStateOf(Coord(0, 0)) }
     GridScreen(viewModel)
     if (viewModel.isObstacleDialogShown) {
@@ -156,7 +140,8 @@ fun Grid(
                         .fillMaxSize()
                         .background(if (draggedOverRow) Color.Red else Color.Transparent)
                     ){
-                        Text("$row",
+                        Text(
+                            "$row",
                             textAlign = TextAlign.Center,
                             fontSize = 10.sp,
                             color = Color.White,
@@ -212,7 +197,7 @@ fun Grid(
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .background(if (hasObstacle != null) selectedColor  else backgroundColor)
+                        .background(if (hasObstacle != null) selectedColor else backgroundColor)
                         .fillMaxSize()
                         .zIndex(if (coord == car.coord) 2f else 1f)
                         .drawWithCache { // draw car
@@ -220,11 +205,11 @@ fun Grid(
                             val height = size.height
                             val path = Path().apply {
                                 moveTo(width / 2, -height) // Top middle
-                                lineTo(-width, 2*height)    // Bottom left
-                                lineTo(2*width, 2*height) // Bottom right
+                                lineTo(-width, 2 * height)    // Bottom left
+                                lineTo(2 * width, 2 * height) // Bottom right
                                 close()
                             }
-                                onDrawBehind {
+                            onDrawBehind {
                                 if (coord == car.coord) {
                                     val angle = when (car.direction) {
                                         "north" -> 0f
@@ -278,12 +263,12 @@ fun Grid(
                         .clickable {
                             if (hasObstacle != null) {
                                 viewModel.previewObstacle = hasObstacle
-                                viewModel.displayObstacleDialog()
+                                viewModel.displayObstacleDialog("existing")
                                 //Toast.makeText(context, "Error: An obstacle is already placed there!", Toast.LENGTH_SHORT).show()
                                 //obstaclesList.remove(coord)
 
+
                             } else if (viewModel.checkCoordCarCollide(coord, car.coord)) {
-                                println("aasdskajda")
                                 viewModel.displayCarDialog()
                             }
 
@@ -334,7 +319,8 @@ fun Grid(
                                                 if (!obstaclesList.any { it.coord == coord }) { // object not already there
                                                     viewModel.previewObstacle =
                                                         GridObstacle(coord, "1", null)
-                                                    viewModel.displayObstacleDialog()
+                                                    viewModel.displayObstacleDialog("new")
+
                                                     // Toast.makeText(context, "Successfully placed obstacle!", Toast.LENGTH_SHORT).show()
 
                                                 } else {
@@ -347,8 +333,6 @@ fun Grid(
                                                         .show()
                                                 }
                                             } else { // existing drag
-                                                println(11)
-                                                println(draggedObstacleCoord)
                                                 if ((!obstaclesList.any { it.coord == coord }) or (coord == viewModel.draggedObstacleCoord)) {
                                                     val index =
                                                         obstaclesList.indexOfFirst { it.coord == viewModel.draggedObstacleCoord }
@@ -359,6 +343,7 @@ fun Grid(
                                                             obstaclesList[index].direction
                                                         )
                                                     }
+                                                    sendMessage("EDIT,${obstaclesList[index].number},${obstaclesList[index].number},${coord.x},${coord.y}},${obstaclesList[index].direction}")
 
                                                 } else {
                                                     Toast
@@ -427,11 +412,12 @@ fun GridScreen(viewModel: MainViewModel) {
                 },
                 target = remember {
                     object : DragAndDropTarget {
-                        override fun onDrop(event: DragAndDropEvent): Boolean {
+                        override fun onDrop(event: DragAndDropEvent): Boolean { // remove obstacle
                             val label = event.toAndroidDragEvent().clipDescription.label
                             val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
                             if ((label == "obstacle") and (text == "existing")) {
-                                viewModel.obstaclesList.removeAll { it.coord == viewModel.draggedObstacleCoord }
+                                val obstacleToRemove = viewModel.obstaclesList.find { it.coord == viewModel.draggedObstacleCoord }
+                                viewModel.obstaclesList.remove(obstacleToRemove)
                                 Toast
                                     .makeText(
                                         context,
@@ -439,6 +425,7 @@ fun GridScreen(viewModel: MainViewModel) {
                                         Toast.LENGTH_SHORT
                                     )
                                     .show()
+                                sendMessage("SUB,${obstacleToRemove!!.number}")
                             }
                             return true
                         }
@@ -457,7 +444,11 @@ fun GridScreen(viewModel: MainViewModel) {
             CarButton(viewModel)
             ResetButton(viewModel)
         }
-        DPad(viewModel)
+        Row {
+            DPad(viewModel)
+            StatusMessage(viewModel)
+        }
+
 
         GridLog(viewModel)
     }
@@ -518,6 +509,7 @@ fun DPad(viewModel: MainViewModel) {
             else {
                 if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y+1))
             }
+            sendMessage("FW10")
         },
 
 
@@ -533,9 +525,11 @@ fun DPad(viewModel: MainViewModel) {
             else {
                 if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x-1, y))
             }
+            sendMessage("FL--")
         },
             modifier = Modifier.graphicsLayer(rotationZ = -90f) ,
             shape=TriangleShape()
+
         ){}
         Button(onClick = {
             if (viewModel.car.value.direction != "east"){
@@ -545,6 +539,7 @@ fun DPad(viewModel: MainViewModel) {
             else {
                 if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x+1, y))
             }
+            sendMessage("FR--")
         },
             modifier = Modifier.graphicsLayer(rotationZ = 90f) ,
             shape=TriangleShape()
@@ -559,6 +554,7 @@ fun DPad(viewModel: MainViewModel) {
             else {
                 if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y-1))
             }
+            sendMessage("BW10")
         },
             modifier = Modifier.graphicsLayer(rotationZ = 180f) ,
             shape=TriangleShape()
@@ -625,5 +621,15 @@ class TriangleShape(direction: String="north") : Shape {
         }
 
         return Outline.Generic(path)
+    }
+}
+@Composable
+fun StatusMessage(viewModel: MainViewModel){
+    Box(){
+        Column {
+            Text("Current status: ")
+            Text(viewModel.status)
+        }
+
     }
 }

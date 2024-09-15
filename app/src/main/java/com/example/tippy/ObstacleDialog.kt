@@ -62,6 +62,8 @@ import androidx.constraintlayout.compose.Dimension
 @Composable
 fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) {
     var text by remember { mutableStateOf(viewModel.previewObstacle.number) }
+
+    val startingText by remember { mutableStateOf(viewModel.previewObstacle.number) }
     var obstacleDirectionPreview: String? by remember {mutableStateOf(viewModel.previewObstacle.direction)}
     val constraints = ConstraintSet {
         val dialogbox = createRefFor("dialogBox")
@@ -139,16 +141,19 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                             start = Offset(0f, strokeWidth / 2)
                                             end = Offset(size.width, strokeWidth / 2)
                                         }
+
                                         "south" -> {
                                             start = Offset(0f, size.height - strokeWidth / 2)
                                             end = Offset(size.width, size.height - strokeWidth / 2)
                                         }
+
                                         "east" -> {
                                             start = Offset(size.width - strokeWidth / 2, 0f)
                                             end = Offset(size.width - strokeWidth / 2, size.height)
                                         }
+
                                         "west" -> {
-                                            start = Offset(strokeWidth / 2,0f)
+                                            start = Offset(strokeWidth / 2, 0f)
                                             end = Offset(strokeWidth / 2, size.height)
                                         }
                                     }
@@ -240,7 +245,12 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                         Button( modifier = Modifier,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                             onClick = {
+                                var direction = obstacleDirectionPreview
+                                if (direction == null) direction = "NULL"
+                                direction = direction.uppercase()
                                 viewModel.previewObstacle = GridObstacle(viewModel.previewObstacle.coord, text, obstacleDirectionPreview)
+                                if (viewModel.obstacleDialogMode == "new") sendMessage("ADD,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
+                                else if (viewModel.obstacleDialogMode == "existing") sendMessage("EDIT,$startingText,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
                                 onConfirm() }) {
                             Text("Confirm")
                         }
