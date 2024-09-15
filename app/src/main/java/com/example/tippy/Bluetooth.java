@@ -246,7 +246,7 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-        connectionStatusTextView = (TextView) findViewById(R.id.connectionStatus);
+        connectionStatusTextView = findViewById(R.id.connectionStatus);
 //        if(myDevice.getBondState() == BluetoothDevice.BOND_BONDED){
 //            connectionStatus.setText("Connected!!");
 //        }
@@ -396,13 +396,8 @@ public class Bluetooth extends AppCompatActivity {
                 int bondState = myNewDevice.getBondState();
 
                 if (bondState == BluetoothDevice.BOND_BONDED){
-                    myDevice = myNewDevice;
-                    Log.d(TAG, "BOND_BONDED to: " + myDevice + myUUID);
-                    connectionStatusTextView.setText("Connected to: " + myDevice.getName());
-                    Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice.getName(), Toast.LENGTH_SHORT).show();
-                    startConnection();
-
                     myPairedBTDevices.clear();
+
                     Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
                     Log.d(TAG, "toggleButton: Number of paired devices found: "+ pairedDevices.size());
 
@@ -412,6 +407,12 @@ public class Bluetooth extends AppCompatActivity {
                         myPairedDeviceListAdapter = new DeviceListAdapter(Bluetooth.this, R.layout.device_adapter_view, myPairedBTDevices);
                         listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
                     }
+                    connectionStatusTextView.setText("Connected to: " + myDevice.getName());
+                    Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice, Toast.LENGTH_SHORT).show();
+
+
+                    myDevice = myNewDevice;
+                    Log.d(TAG, "BOND_BONDED to: " + myDevice + myUUID);
 
                 }
                 if(bondState== BluetoothDevice.BOND_BONDING){
@@ -428,7 +429,7 @@ public class Bluetooth extends AppCompatActivity {
         @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
-            BluetoothDevice myDevice = intent.getParcelableExtra("Device");
+            BluetoothDevice myBTDevice = intent.getParcelableExtra("Device");
             Log.d(TAG, "bluetooth screen now");
             String status = intent.getStringExtra("Status");
             sharedPreferences = getApplicationContext().getSharedPreferences("Shared Preferences", Context.MODE_PRIVATE);
@@ -441,15 +442,15 @@ public class Bluetooth extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                Log.d(TAG, "receiverHandleConnections: Device now connected to "+myDevice.getName());
-                Toast.makeText(Bluetooth.this, "Device now connected to "+myDevice.getName(), Toast.LENGTH_SHORT).show();
-                editor.putString("connStatus", "Connected to " + myDevice.getName());
-                connectionStatusTextView.setText("Connected to " + myDevice.getName());
+                Log.d(TAG, "receiverHandleConnections: Device now connected to "+myBTDevice.getName());
+                Toast.makeText(Bluetooth.this, "Device now connected to "+myBTDevice.getName(), Toast.LENGTH_SHORT).show();
+                editor.putString("connStatus", "Connected to " + myBTDevice.getName());
+                connectionStatusTextView.setText("Connected to " + myBTDevice.getName());
 
             }
             else if(status.equals("disconnected") && !retryConnection){
-                Log.d(TAG, "receiverHandleConnections: Disconnected from "+myDevice.getName());
-                Toast.makeText(Bluetooth.this, "Disconnected from "+myDevice.getName(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "receiverHandleConnections: Disconnected from "+myBTDevice.getName());
+                Toast.makeText(Bluetooth.this, "Disconnected from "+myBTDevice.getName(), Toast.LENGTH_SHORT).show();
                 myBluetoothConnection = new BluetoothManager(Bluetooth.this);
 
 
@@ -470,6 +471,8 @@ public class Bluetooth extends AppCompatActivity {
                 reconnectionHandler.postDelayed(reconnectionRunnable, 5000);
 
             }
+            if (status.equals("disconnected"))
+                connectionStatusTextView.setText("Disconnected");
             editor.commit();
         }
     };
