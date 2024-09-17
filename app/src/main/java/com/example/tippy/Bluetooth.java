@@ -407,13 +407,14 @@ public class Bluetooth extends AppCompatActivity {
                         myPairedDeviceListAdapter = new DeviceListAdapter(Bluetooth.this, R.layout.device_adapter_view, myPairedBTDevices);
                         listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
                     }
+
+                    myDevice = myNewDevice;
                     connectionStatusTextView.setText("Connected to: " + myDevice.getName());
                     Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice, Toast.LENGTH_SHORT).show();
 
-
-                    myDevice = myNewDevice;
                     Log.d(TAG, "BOND_BONDED to: " + myDevice + myUUID);
-
+                    myBluetoothConnection = new BluetoothManager(Bluetooth.this);
+                    startBTConnection(myDevice, myUUID);
                 }
                 if(bondState== BluetoothDevice.BOND_BONDING){
                     Log.d(TAG, "BOND_BONDING.");
