@@ -63,12 +63,30 @@ public class Bluetooth extends AppCompatActivity {
     boolean retryConnection = false;
     Handler reconnectionHandler = new Handler();
 
+    private Handler connectionHandler = new Handler();
+    private Runnable connectionStatusChecker = new Runnable() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public void run() {
+            if (myDevice != null && myDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                connectionStatusTextView.setText("Connected to " + myDevice.getName());
+            } else {
+                connectionStatusTextView.setText("Disconnected");
+            }
+
+            // Repeat this runnable code block again after 2 seconds
+            connectionHandler.postDelayed(this, 2000);
+        }
+    };
+
+
     Runnable reconnectionRunnable = new Runnable() {
         @SuppressLint("MissingPermission")
         @Override
         public void run() {
             try {
                 if (!BluetoothManager.BluetoothConnectionStatus) {
+//                    myBluetoothConnection = new BluetoothManager(Bluetooth.this);
                     startBTConnection(myDevice, myUUID);
                     Toast.makeText(Bluetooth.this, "Reconnection Success", Toast.LENGTH_SHORT).show();
 
@@ -92,6 +110,7 @@ public class Bluetooth extends AppCompatActivity {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
+        connectionHandler.post(connectionStatusChecker);
 
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -233,8 +252,9 @@ public class Bluetooth extends AppCompatActivity {
             }
         });
 
-//        connStatus = "Disconnected";
-//        connectionStatus.setText(connStatus);
+        connectionStatusTextView = (TextView) findViewById(R.id.connectionStatus);
+        connStatus = "Disconnected";
+        connectionStatusTextView.setText(connStatus);
 
         myDialog = new ProgressDialog(Bluetooth.this);
         myDialog.setMessage("Waiting for other device to reconnect...");
@@ -245,15 +265,19 @@ public class Bluetooth extends AppCompatActivity {
                 dialog.dismiss();
             }
         });
-
-        connectionStatusTextView = findViewById(R.id.connectionStatus);
-//        if(myDevice.getBondState() == BluetoothDevice.BOND_BONDED){
-//            connectionStatus.setText("Connected!!");
-//        }
-        connectionStatusTextView.setText("Disconnected!");
-
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        connectionHandler.removeCallbacks(connectionStatusChecker); // Stop the checker when the activity is paused
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        connectionHandler.removeCallbacks(connectionStatusChecker); // Stop the checker when the activity is destroyed
+    }
 
 
     // Search Button
@@ -435,6 +459,9 @@ public class Bluetooth extends AppCompatActivity {
             String status = intent.getStringExtra("Status");
             sharedPreferences = getApplicationContext().getSharedPreferences("Shared Preferences", Context.MODE_PRIVATE);
             editor = sharedPreferences.edit();
+            TextView connStatusTextView = findViewById(R.id.connectionStatus);
+
+            Log.d(TAG, status);
 
             if(status.equals("connected")){
                 try {
@@ -446,7 +473,7 @@ public class Bluetooth extends AppCompatActivity {
                 Log.d(TAG, "receiverHandleConnections: Device now connected to "+myBTDevice.getName());
                 Toast.makeText(Bluetooth.this, "Device now connected to "+myBTDevice.getName(), Toast.LENGTH_SHORT).show();
                 editor.putString("connStatus", "Connected to " + myBTDevice.getName());
-                connectionStatusTextView.setText("Connected to " + myBTDevice.getName());
+                connStatusTextView.setText("Connected to " + myBTDevice.getName());
 
             }
             else if(status.equals("disconnected") && !retryConnection){
@@ -458,8 +485,8 @@ public class Bluetooth extends AppCompatActivity {
                 sharedPreferences = getApplicationContext().getSharedPreferences("Shared Preferences", Context.MODE_PRIVATE);
                 editor = sharedPreferences.edit();
                 editor.putString("connStatus", "Disconnected");
-                TextView connectionStatusTextView = findViewById(R.id.connectionStatus);
-                connectionStatusTextView.setText("Disconnected");
+
+                connStatusTextView.setText("Disconnected");
 
                 editor.commit();
 
@@ -477,6 +504,7 @@ public class Bluetooth extends AppCompatActivity {
             editor.commit();
         }
     };
+
 
     public void startConnection(){
         startBTConnection(myDevice,myUUID);
