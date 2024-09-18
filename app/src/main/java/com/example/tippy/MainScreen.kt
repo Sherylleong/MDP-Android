@@ -57,6 +57,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+
+
+
 
 fun sendMessage(message: String) {
     if (BluetoothManager.BluetoothConnectionStatus) {
@@ -395,62 +401,70 @@ fun Grid(
 }
 
 
-
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
-    Column (horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .dragAndDropTarget(
-                shouldStartDragAndDrop = { event ->
-                    event
-                        .mimeTypes()
-                        .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
-                },
-                target = remember {
-                    object : DragAndDropTarget {
-                        override fun onDrop(event: DragAndDropEvent): Boolean { // remove obstacle
-                            val label = event.toAndroidDragEvent().clipDescription.label
-                            val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
-                            if ((label == "obstacle") and (text == "existing")) {
-                                val obstacleToRemove = viewModel.obstaclesList.find { it.coord == viewModel.draggedObstacleCoord }
-                                viewModel.obstaclesList.remove(obstacleToRemove)
-                                Toast
-                                    .makeText(
-                                        context,
-                                        "Obstacle removed",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
-                                sendMessage("SUB,${obstacleToRemove!!.number}")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(R.drawable.speedometer),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        Column (horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .dragAndDropTarget(
+                    shouldStartDragAndDrop = { event ->
+                        event
+                            .mimeTypes()
+                            .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                    },
+                    target = remember {
+                        object : DragAndDropTarget {
+                            override fun onDrop(event: DragAndDropEvent): Boolean { // remove obstacle
+                                val label = event.toAndroidDragEvent().clipDescription.label
+                                val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
+                                if ((label == "obstacle") and (text == "existing")) {
+                                    val obstacleToRemove = viewModel.obstaclesList.find { it.coord == viewModel.draggedObstacleCoord }
+                                    viewModel.obstaclesList.remove(obstacleToRemove)
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "Obstacle removed",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                    sendMessage("SUB,${obstacleToRemove!!.number}")
+                                }
+                                return true
                             }
-                            return true
+
+                            override fun onEntered(event: DragAndDropEvent) {
+                                super.onEntered(event)
+                                viewModel.draggedOverCoord = null
+                            }
                         }
+                    })
+        ){
+            Grid(viewModel)
+            Row (horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically) {
+                ObstacleDraggable()
+                CarButton(viewModel)
+                ResetButton(viewModel)
+            }
+            Row {
+                DPad(viewModel)
+                StatusMessage(viewModel)
+            }
 
-                        override fun onEntered(event: DragAndDropEvent) {
-                            super.onEntered(event)
-                            viewModel.draggedOverCoord = null
-                        }
-                    }
-                })
-    ){
-        Grid(viewModel)
-        Row (horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically) {
-            ObstacleDraggable()
-            CarButton(viewModel)
-            ResetButton(viewModel)
+
+            GridLog(viewModel)
         }
-        Row {
-            DPad(viewModel)
-            StatusMessage(viewModel)
-        }
-
-
-        GridLog(viewModel)
     }
 }
 

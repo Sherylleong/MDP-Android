@@ -88,13 +88,22 @@ public class Bluetooth extends AppCompatActivity {
                 if (!BluetoothManager.BluetoothConnectionStatus) {
 //                    myBluetoothConnection = new BluetoothManager(Bluetooth.this);
                     startBTConnection(myDevice, myUUID);
-                    Toast.makeText(Bluetooth.this, "Reconnection Success", Toast.LENGTH_SHORT).show();
+                    // Check the connection status after the attempt
+                    if (!BluetoothManager.BluetoothConnectionStatus) {
+                        // If still not connected, show a Toast and reschedule
+                        Toast.makeText(Bluetooth.this, "Failed to reconnect, retry in 5s", Toast.LENGTH_SHORT).show();
+                        reconnectionHandler.postDelayed(reconnectionRunnable, 5000); // Retry after 5 seconds
+                    }
+                    else {
+                        Toast.makeText(Bluetooth.this, "Reconnection Success", Toast.LENGTH_SHORT).show();
+                    }
 
                 }
-                reconnectionHandler.removeCallbacks(reconnectionRunnable);
+                //reconnectionHandler.removeCallbacks(reconnectionRunnable);
                 retryConnection = false;
             } catch (Exception e) {
                 Toast.makeText(Bluetooth.this, "Failed to reconnect, retry in 5s", Toast.LENGTH_SHORT).show();
+                reconnectionHandler.postDelayed(reconnectionRunnable, 5000); // Retry after 5 seconds
             }
         }
     };
