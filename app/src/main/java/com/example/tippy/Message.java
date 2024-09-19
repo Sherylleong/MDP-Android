@@ -59,12 +59,12 @@ public class Message extends AppCompatActivity {
 
     public void updateChatLog(String message) {
         String currentText = messageDisplay.getText().toString();
-        messageDisplay.setText(currentText + "\n [ME] " + message);
+        messageDisplay.setText(currentText + "\n[ME] " + message);
     }
 
-    public void updateChatLogRobot(String message){
+    public void updateChatLogRobot(String message) {
         String currentText = messageDisplay.getText().toString();
-        messageDisplay.setText(currentText + "\n [Robot] " + message);
+        messageDisplay.setText(currentText + "\n[Robot] " + message);
     }
 
     public boolean isBluetoothConnected() {
