@@ -60,8 +60,30 @@ import androidx.compose.ui.zIndex
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
+import android.bluetooth.BluetoothAdapter
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 
+fun startBluetoothStatusChecker(viewModel: MainViewModel) {
+    val handler = Handler(Looper.getMainLooper())
+    val checkInterval: Long = 2000 // 2 seconds
 
+    val bluetoothCheckRunnable = object : Runnable {
+        override fun run() {
+            if (!BluetoothManager.BluetoothConnectionStatus) {
+                viewModel.status = "Not connected"
+            } else if (BluetoothManager.BluetoothConnectionStatus && viewModel.status == "Not connected") {
+                viewModel.status = "Connected and ready"
+            }
+            handler.postDelayed(this, checkInterval)
+        }
+    }
+
+    // Start checking Bluetooth status
+    handler.post(bluetoothCheckRunnable)
+}
 
 
 fun sendMessage(message: String) {
@@ -73,6 +95,7 @@ fun sendMessage(message: String) {
 
 @Composable
 fun MainScreen(viewModel: MainViewModel){
+    startBluetoothStatusChecker(viewModel)
     if (!BluetoothManager.BluetoothConnectionStatus) {
         viewModel.status = "Not connected"
     }
@@ -510,72 +533,78 @@ fun ResetButton(viewModel: MainViewModel) {
     }
 }
 
+
 @Composable
 fun DPad(viewModel: MainViewModel) {
     val x = viewModel.car.value.coord.x
     val y = viewModel.car.value.coord.y
-    Row{
-        Button(onClick = {
-            if (viewModel.car.value.direction != "north"){
-                viewModel.car.value = viewModel.car.value.copy(direction = "north")
-                viewModel.previewCar = viewModel.car.value
-            }
-            else {
-                if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y+1))
-            }
-            sendMessage("FW10")
-        },
 
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // North Button (Forward)
+        Button(
+            onClick = {
+                if (viewModel.car.value.direction != "north") {
+                    viewModel.car.value = viewModel.car.value.copy(direction = "north")
+                    viewModel.previewCar = viewModel.car.value
+                } else {
+                    if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                }
+                sendMessage("FW10")
+            },
+            shape = TriangleShape(),
+            modifier = Modifier.graphicsLayer(rotationZ = 0f)
+        ) {}
 
-            shape=TriangleShape()
-        ){}
+        // West, Placeholder, and East Buttons
+        Row {
+            Button(
+                onClick = {
+                    if (viewModel.car.value.direction != "west") {
+                        viewModel.car.value = viewModel.car.value.copy(direction = "west")
+                        viewModel.previewCar = viewModel.car.value
+                    } else {
+                        if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    }
+                    sendMessage("FL--")
+                },
+                shape = TriangleShape(),
+                modifier = Modifier.graphicsLayer(rotationZ = -90f)
+            ) {}
+
+            Spacer(modifier = Modifier.size(50.dp)) // Central space or placeholder
+
+            Button(
+                onClick = {
+                    if (viewModel.car.value.direction != "east") {
+                        viewModel.car.value = viewModel.car.value.copy(direction = "east")
+                        viewModel.previewCar = viewModel.car.value
+                    } else {
+                        if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    }
+                    sendMessage("FR--")
+                },
+                shape = TriangleShape(),
+                modifier = Modifier.graphicsLayer(rotationZ = 90f)
+            ) {}
+        }
+
+        // South Button (Backward)
+        Button(
+            onClick = {
+                if (viewModel.car.value.direction != "south") {
+                    viewModel.car.value = viewModel.car.value.copy(direction = "south")
+                    viewModel.previewCar = viewModel.car.value
+                } else {
+                    if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                }
+                sendMessage("BW10")
+            },
+            shape = TriangleShape(),
+            modifier = Modifier.graphicsLayer(rotationZ = 180f)
+        ) {}
     }
-    Row{
-        Button(onClick = {
-            if (viewModel.car.value.direction != "west"){
-                viewModel.car.value = viewModel.car.value.copy(direction = "west")
-                viewModel.previewCar = viewModel.car.value
-            }
-            else {
-                if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x-1, y))
-            }
-            sendMessage("FL--")
-        },
-            modifier = Modifier.graphicsLayer(rotationZ = -90f) ,
-            shape=TriangleShape()
-
-        ){}
-        Button(onClick = {
-            if (viewModel.car.value.direction != "east"){
-                viewModel.car.value = viewModel.car.value.copy(direction = "east")
-                viewModel.previewCar = viewModel.car.value
-            }
-            else {
-                if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x+1, y))
-            }
-            sendMessage("FR--")
-        },
-            modifier = Modifier.graphicsLayer(rotationZ = 90f) ,
-            shape=TriangleShape()
-        ){}
-    }
-    Row{
-        Button(onClick = {
-            if (viewModel.car.value.direction != "south"){
-                viewModel.car.value = viewModel.car.value.copy(direction = "south")
-                viewModel.previewCar = viewModel.car.value
-            }
-            else {
-                if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y-1))
-            }
-            sendMessage("BW10")
-        },
-            modifier = Modifier.graphicsLayer(rotationZ = 180f) ,
-            shape=TriangleShape()
-        ){}
-    }
-
 }
+
 
 
 @Composable
