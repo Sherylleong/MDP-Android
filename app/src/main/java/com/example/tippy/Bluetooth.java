@@ -99,7 +99,7 @@ public class Bluetooth extends AppCompatActivity {
                     }
 
                 }
-                //reconnectionHandler.removeCallbacks(reconnectionRunnable);
+                reconnectionHandler.removeCallbacks(reconnectionRunnable);
                 retryConnection = false;
             } catch (Exception e) {
                 Toast.makeText(Bluetooth.this, "Failed to reconnect, retry in 5s", Toast.LENGTH_SHORT).show();
@@ -446,8 +446,8 @@ public class Bluetooth extends AppCompatActivity {
                     Toast.makeText(Bluetooth.this, "Successfully paired with " + myDevice, Toast.LENGTH_SHORT).show();
 
                     Log.d(TAG, "BOND_BONDED to: " + myDevice + myUUID);
-                    myBluetoothConnection = new BluetoothManager(Bluetooth.this);
-                    startBTConnection(myDevice, myUUID);
+//                    myBluetoothConnection = new BluetoothManager(Bluetooth.this);
+//                    startBTConnection(myDevice, myUUID);
                 }
                 if(bondState== BluetoothDevice.BOND_BONDING){
                     Log.d(TAG, "BOND_BONDING.");
