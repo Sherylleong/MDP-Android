@@ -65,6 +65,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import org.json.JSONObject
 
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
     val handler = Handler(Looper.getMainLooper())
@@ -86,9 +87,13 @@ fun startBluetoothStatusChecker(viewModel: MainViewModel) {
 }
 
 
-fun sendMessage(message: String) {
+fun sendMessage(instruction: String) {
     if (BluetoothManager.BluetoothConnectionStatus) {
-        val bytes = message.toByteArray()
+        val jsonObject = JSONObject().apply {
+            put("instruction", instruction)
+        }
+
+        val bytes = jsonObject.toString().toByteArray()
         BluetoothManager.write(bytes)
     }
 }
