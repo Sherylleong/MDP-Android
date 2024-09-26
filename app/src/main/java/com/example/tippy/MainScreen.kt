@@ -87,10 +87,11 @@ fun startBluetoothStatusChecker(viewModel: MainViewModel) {
 }
 
 
-fun sendMessage(instruction: String) {
+fun sendMessage(value: String) {
     if (BluetoothManager.BluetoothConnectionStatus) {
         val jsonObject = JSONObject().apply {
-            put("instruction", instruction)
+            put("cat", "instruction")
+            put("value", value)
         }
 
         val bytes = jsonObject.toString().toByteArray()
@@ -554,7 +555,7 @@ fun DPad(viewModel: MainViewModel) {
                 } else {
                     if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
                 }
-                sendMessage("FW10")
+                sendMessage("FW05")
             },
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 0f)
@@ -570,7 +571,7 @@ fun DPad(viewModel: MainViewModel) {
                     } else {
                         if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                     }
-                    sendMessage("FL--")
+                    sendMessage("FL05")
                 },
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = -90f)
@@ -586,7 +587,7 @@ fun DPad(viewModel: MainViewModel) {
                     } else {
                         if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                     }
-                    sendMessage("FR--")
+                    sendMessage("FR05")
                 },
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = 90f)
@@ -602,7 +603,7 @@ fun DPad(viewModel: MainViewModel) {
                 } else {
                     if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
                 }
-                sendMessage("BW10")
+                sendMessage("BW05")
             },
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 180f)
