@@ -1,75 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main"
-    android:background="@drawable/speedometer"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/inside_out_wallpaper_2"
     tools:context=".Bluetooth">
 
-<!--    <TextView-->
-<!--        android:id="@+id/bluetooth_header"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Bluetooth:"-->
-<!--        android:textSize="30sp"-->
-<!--        android:textStyle="bold"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintLeft_toLeftOf="parent"-->
-<!--        app:layout_constraintRight_toRightOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.025"-->
-<!--        app:layout_constraintHorizontal_bias="0.1"-->
-<!--    />-->
+    <!--    <TextView-->
+    <!--        android:id="@+id/bluetooth_header"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Bluetooth:"-->
+    <!--        android:textSize="30sp"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--        app:layout_constraintRight_toRightOf="parent"-->
+    <!--        app:layout_constraintVertical_bias="0.025"-->
+    <!--        app:layout_constraintHorizontal_bias="0.1"-->
+    <!--    />-->
 
 
     <TextView
         android:id="@+id/connectionStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.032"
-        app:layout_constraintHorizontal_bias="0.15"
         android:text=""
         android:textAllCaps="true"
         android:textSize="20dp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.032" />
 
 
     <!--    <TextView-->
-<!--        android:id="@+id/status_header"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Status: "-->
-<!--        android:textSize="30sp"-->
-<!--        android:textStyle="bold"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintLeft_toLeftOf="parent"-->
-<!--        app:layout_constraintRight_toRightOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.025"-->
-<!--        app:layout_constraintHorizontal_bias="0.8"-->
-<!--    />-->
+    <!--        android:id="@+id/status_header"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Status: "-->
+    <!--        android:textSize="30sp"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--        app:layout_constraintRight_toRightOf="parent"-->
+    <!--        app:layout_constraintVertical_bias="0.025"-->
+    <!--        app:layout_constraintHorizontal_bias="0.8"-->
+    <!--    />-->
 
-<!--    <TextView-->
-<!--        android:id="@+id/bluetooth_status"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text=""-->
-<!--        android:textSize="30sp"-->
-<!--        android:textStyle="bold"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintLeft_toRightOf="@id/bluetooth_header"-->
-<!--        app:layout_constraintRight_toRightOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.025"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--    />-->
-
+    <!--    <TextView-->
+    <!--        android:id="@+id/bluetooth_status"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text=""-->
+    <!--        android:textSize="30sp"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintLeft_toRightOf="@id/bluetooth_header"-->
+    <!--        app:layout_constraintRight_toRightOf="parent"-->
+    <!--        app:layout_constraintVertical_bias="0.025"-->
+    <!--        app:layout_constraintHorizontal_bias="0.5"-->
+    <!--    />-->
 
 
     <TextView
@@ -77,16 +76,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="My Devices"
+        android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@+id/connectionStatus"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.025"
-        app:layout_constraintHorizontal_bias="0.1"
-    />
+        app:layout_constraintTop_toBottomOf="@+id/connectionStatus"
+        app:layout_constraintVertical_bias="0.025" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/bluetoothSwitch"
@@ -97,86 +95,80 @@
         android:text="OFF"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.09"
         app:layout_constraintHorizontal_bias="0.9"
-        />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.09" />
 
 
     <ListView
         android:id="@+id/list_of_paired_devices"
         android:layout_width="500dp"
         android:layout_height="320dp"
+        android:background="@color/purple_200"
+        android:listSelector="#8a00c4"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/my_devices_header"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.025"
-        app:layout_constraintHorizontal_bias="0.5"
-        android:listSelector="#8a00c4"
-        android:scrollbars="vertical"
-        android:background="@color/purple_200"
-    />
+        app:layout_constraintVertical_bias="0.025" />
 
     <TextView
         android:id="@+id/available_devices_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Available Devices"
+        android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.11"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintVertical_bias="0.05"
-        app:layout_constraintHorizontal_bias="0.11"
-    />
+        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
+        app:layout_constraintVertical_bias="0.05" />
 
     <Button
         android:id="@+id/scan_for_devices_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Scan for devices"
-        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.9"
         app:layout_constraintLeft_toRightOf="@+id/available_devices_header"
         app:layout_constraintRight_toLeftOf="@id/connectButton"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.05"
-        app:layout_constraintHorizontal_bias="0.9"
-    />
+        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
+        app:layout_constraintVertical_bias="0.05" />
 
     <Button
         android:id="@+id/connectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="scanForDevices"
         android:text="Connect"
-        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.85"
         app:layout_constraintLeft_toRightOf="@+id/available_devices_header"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.05"
-        app:layout_constraintHorizontal_bias="0.85"
-        android:onClick="scanForDevices"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/list_of_paired_devices"
+        app:layout_constraintVertical_bias="0.05" />
 
     <ListView
         android:id="@+id/list_of_available_devices"
         android:layout_width="500dp"
         android:layout_height="320dp"
+        android:background="@color/teal_200"
+        android:listSelector="#6395ee"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/available_devices_header"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.25"
-        app:layout_constraintHorizontal_bias="0.5"
-        android:listSelector="#6395ee"
-        android:scrollbars="vertical"
-        android:background="@color/teal_200"
-    />
+        app:layout_constraintVertical_bias="0.25" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

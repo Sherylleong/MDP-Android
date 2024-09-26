@@ -549,11 +549,12 @@ fun DPad(viewModel: MainViewModel) {
         // North Button (Forward)
         Button(
             onClick = {
-                if (viewModel.car.value.direction != "north") {
-                    viewModel.car.value = viewModel.car.value.copy(direction = "north")
-                    viewModel.previewCar = viewModel.car.value
-                } else {
-                    if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                val dir = viewModel.car.value.direction
+                when (dir) {
+                    "north" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "south" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "east" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    "west" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                 }
                 sendMessage("FW05")
             },
@@ -565,12 +566,14 @@ fun DPad(viewModel: MainViewModel) {
         Row {
             Button(
                 onClick = {
-                    if (viewModel.car.value.direction != "west") {
-                        viewModel.car.value = viewModel.car.value.copy(direction = "west")
-                        viewModel.previewCar = viewModel.car.value
-                    } else {
-                        if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    val dir = viewModel.car.value.direction
+                    when (dir) {
+                        "north" -> viewModel.car.value = viewModel.car.value.copy(direction = "west")
+                        "south" -> viewModel.car.value = viewModel.car.value.copy(direction = "east")
+                        "east" -> viewModel.car.value = viewModel.car.value.copy(direction = "north")
+                        "west" -> viewModel.car.value = viewModel.car.value.copy(direction = "south")
                     }
+                    viewModel.previewCar = viewModel.car.value
                     sendMessage("FL05")
                 },
                 shape = TriangleShape(),
@@ -581,11 +584,12 @@ fun DPad(viewModel: MainViewModel) {
 
             Button(
                 onClick = {
-                    if (viewModel.car.value.direction != "east") {
-                        viewModel.car.value = viewModel.car.value.copy(direction = "east")
-                        viewModel.previewCar = viewModel.car.value
-                    } else {
-                        if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    val dir = viewModel.car.value.direction
+                    when (dir) {
+                        "north" -> viewModel.car.value = viewModel.car.value.copy(direction = "east")
+                        "south" -> viewModel.car.value = viewModel.car.value.copy(direction = "west")
+                        "east" -> viewModel.car.value = viewModel.car.value.copy(direction = "south")
+                        "west" -> viewModel.car.value = viewModel.car.value.copy(direction = "north")
                     }
                     sendMessage("FR05")
                 },
@@ -597,11 +601,12 @@ fun DPad(viewModel: MainViewModel) {
         // South Button (Backward)
         Button(
             onClick = {
-                if (viewModel.car.value.direction != "south") {
-                    viewModel.car.value = viewModel.car.value.copy(direction = "south")
-                    viewModel.previewCar = viewModel.car.value
-                } else {
-                    if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                val dir = viewModel.car.value.direction
+                when (dir) {
+                    "north" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "south" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "east" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    "west" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                 }
                 sendMessage("BW05")
             },
