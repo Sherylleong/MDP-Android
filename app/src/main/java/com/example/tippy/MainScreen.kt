@@ -65,6 +65,9 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.res.imageResource
 import org.json.JSONObject
 
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
@@ -159,6 +162,7 @@ fun Grid(
             val border = (row == 0) or (col==0) or (row == columns+1) or (col == columns+1)
             val backgroundColor = if (draggedOver) panColor else if (isDark) Color(0xFF4CAF50) else Color(0xFF8BC34A)
             val selectedColor = Color.Black
+            val angerImageBitmap: ImageBitmap = ImageBitmap.imageResource(id = R.drawable.anger_transparent) //  image resource
 
 
 
@@ -236,8 +240,10 @@ fun Grid(
                         .fillMaxSize()
                         .zIndex(if (coord == car.coord) 2f else 1f)
                         .drawWithCache { // draw car
+
                             val width = size.width
                             val height = size.height
+
                             val path = Path().apply {
                                 moveTo(width / 2, -height) // Top middle
                                 lineTo(-width, 2 * height)    // Bottom left
@@ -254,12 +260,30 @@ fun Grid(
                                         else -> 0f // Default pointing up
                                     }
                                     rotate(degrees = angle) {
-                                        drawPath(path, color = Color.Blue)
+                                        val imageWidth = angerImageBitmap.width.toFloat()
+                                        val imageHeight = angerImageBitmap.height.toFloat()
+                                        val scaleFactor = 0.45f  // This reduces the size to 50% of the original
+
+                                        val scaledWidth = (angerImageBitmap.width * scaleFactor).toInt()
+                                        val scaledHeight = (angerImageBitmap.height * scaleFactor).toInt()
+                                        drawPath(path, color = Color.Red)
+                                        scale(scaleFactor) {
+                                            drawImage(
+                                                image = angerImageBitmap,
+                                                topLeft = Offset(
+                                                    x = - 3f * size.width,
+                                                    y = - size.height
+                                                ),
+                                            )
+                                        }
+
+
                                     }
 
                                 }
 
                             }
+
                         }
                         .drawBehind {
                             val strokeWidth = 5.dp.toPx() * density
