@@ -68,11 +68,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import org.json.JSONArray
 import org.json.JSONObject
@@ -541,67 +545,107 @@ fun GridScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-fun Console(viewModel: MainViewModel){
-    Column (
-        verticalArrangement = Arrangement.SpaceAround,
+fun Console(viewModel: MainViewModel) {
+    // Load background image from resources
+    val backgroundImage = painterResource(id = R.drawable.inside_out_ctrl_panel)
+
+    Box(
         modifier = Modifier
-        .background(color = Color.White)
-        .fillMaxSize()
-    ){
-        Row (horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+            .fillMaxSize()
+    ) {
+        // Set the background image
+        Image(
+            painter = backgroundImage,
+            contentDescription = null,
+            contentScale = ContentScale.Crop, // Scale image to fill the entire box
+            modifier = Modifier.fillMaxSize() // Fill the entire size of the screen
         )
-             {
-            ObstacleDraggable()
-            CarButton(viewModel)
-            ResetButton(viewModel)
-        }
-        Row (horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
+
+        // Overlay the UI elements on top of the background image
+        Column(
+            verticalArrangement = Arrangement.SpaceAround,
             modifier = Modifier
-                .fillMaxWidth()
-        )
-        {
-            DPad(viewModel)
-            StatusMessage(viewModel)
-            StartButtons(viewModel)
+                .fillMaxSize()
+                .background(Color.Transparent) // Ensure background is transparent
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                ObstacleDraggable() // Keep this in the row
+                CarButton(viewModel)
+                ResetButton(viewModel)
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+//                DPad(viewModel)
+                Joystick(viewModel)
+
+                // Nest the buttons and status message in a column
+                Column(
+                    verticalArrangement = Arrangement.SpaceAround,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(16.dp) // Adjust padding as necessary
+                ) {
+                    StatusMessage(viewModel)
+
+                    sendObstaclesButton(viewModel)
+                    startFastestPathButton(viewModel)
+                    startImageRecButton(viewModel)
+                }
+            }
         }
     }
-
 }
-
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ObstacleDraggable() {
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier){
-            Box(modifier = Modifier
-                .background(color = panColor)
-                .size(30.dp, 30.dp)
-                .dragAndDropSource {
-                detectTapGestures(
-                    onPress = { offset ->
-                        startTransfer(
-                            transferData = DragAndDropTransferData(
-                                clipData = ClipData.newPlainText(
-                                    "obstacle",
-                                    "new"
+    Button(
+        onClick = { /* No-op or optional click action */ },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
+        modifier = Modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(color = panColor)
+                    .size(30.dp, 30.dp)
+                    .dragAndDropSource {
+                        detectTapGestures(
+                            onPress = { offset ->
+                                startTransfer(
+                                    transferData = DragAndDropTransferData(
+                                        clipData = ClipData.newPlainText(
+                                            "obstacle",
+                                            "new"
+                                        )
+                                    )
                                 )
-                            )
+                            }
                         )
-                    })
-            }
+                    }
             )
-            Text("Add Object")
+
+            Text(
+                "Add Object (Drag the box!)",
+                textAlign = TextAlign.Center
+            )
         }
-
-
+    }
 }
+
 
 @Composable
 fun ResetButton(viewModel: MainViewModel) {
@@ -609,6 +653,7 @@ fun ResetButton(viewModel: MainViewModel) {
         viewModel.obstaclesList.clear();
         viewModel.car.value = GridCar(Coord(2,2), "N")
     },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
         modifier = Modifier
         //.heightIn(max = 30.dp)
 
@@ -620,7 +665,104 @@ fun ResetButton(viewModel: MainViewModel) {
         )
     }
 }
+@Composable
+fun Joystick(viewModel: MainViewModel) {
+    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+    val size = 200.dp
 
+    Box(
+        modifier = Modifier
+            .size(size)
+            .background(Color.Gray, shape = CircleShape) // Background of the joystick
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        // Reset the joystick position when the drag ends
+                        offset = Offset(0f, 0f)
+                    },
+                    onDragCancel = {
+                        // Reset the joystick position if the drag is canceled
+                        offset = Offset(0f, 0f)
+                    }
+                ) { change, dragAmount ->
+                    // Update the offset based on drag
+                    offset = Offset(
+                        x = (offset.x + dragAmount.x).coerceIn(-100f, 100f), // Limit within the circle
+                        y = (offset.y + dragAmount.y).coerceIn(-100f, 100f)
+                    )
+                    change.consume() // Consume the drag event
+                }
+            }
+            .graphicsLayer {
+                // Translate the joystick position based on the offset
+                translationX = offset.x
+                translationY = offset.y
+            }
+    ) {
+        // Joystick knob
+        Box(
+            modifier = Modifier
+                .size(60.dp) // Size of the knob
+                .background(Color.Blue, shape = CircleShape)
+                .align(Alignment.Center)
+        )
+    }
+
+    // Handle joystick position changes
+    LaunchedEffect(offset) {
+        val threshold = 50f // Define a threshold for movement detection
+        val x = viewModel.car.value.coord.x
+        val y = viewModel.car.value.coord.y
+
+        when {
+            offset.y < -threshold -> {
+                // Move forward
+                val dir = viewModel.car.value.direction
+                when (dir) {
+                    "N" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "S" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "E" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    "W" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                }
+                sendMessage("instruction","FW05")
+
+            }
+            offset.y > threshold -> {
+                // Move backward
+                val dir = viewModel.car.value.direction
+                when (dir) {
+                    "N" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "S" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "E" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    "W" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                }
+                sendMessage("instruction", "BW05")
+            }
+            offset.x < -threshold -> {
+                // Rotate left
+                viewModel.car.value = viewModel.car.value.copy(direction = when (viewModel.car.value.direction) {
+                    "N" -> "W"
+                    "W" -> "S"
+                    "S" -> "E"
+                    "E" -> "N"
+                    else -> viewModel.car.value.direction
+                })
+                sendMessage("instruction", "FL05") // Adjust to your left turn instruction
+            }
+            offset.x > threshold -> {
+                // Rotate right
+                viewModel.car.value = viewModel.car.value.copy(direction = when (viewModel.car.value.direction) {
+                    "N" -> "E"
+                    "E" -> "S"
+                    "S" -> "W"
+                    "W" -> "N"
+                    else -> viewModel.car.value.direction
+                })
+                sendMessage("instruction", "FR05") // Adjust to your right turn instruction
+            }
+        }
+    }
+}
 
 @Composable
 fun DPad(viewModel: MainViewModel) {
@@ -641,6 +783,10 @@ fun DPad(viewModel: MainViewModel) {
                 }
                 sendMessage("instruction","FW05")
             },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xff1C1C1C),
+                contentColor = Color.White
+            ),
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 0f)
                 .size(100.dp, 60.dp)
@@ -663,6 +809,10 @@ fun DPad(viewModel: MainViewModel) {
                     viewModel.previewCar = viewModel.car.value
                     sendMessage("instruction", "FL05")
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xff1C1C1C),
+                    contentColor = Color.White
+                ),
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = -90f)
                     .size(100.dp, 60.dp)
@@ -682,6 +832,10 @@ fun DPad(viewModel: MainViewModel) {
                     }
                     sendMessage("instruction", "FR05")
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xff1C1C1C),
+                    contentColor = Color.White
+                ),
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = 90f)
                     .size(100.dp, 60.dp)
@@ -701,6 +855,10 @@ fun DPad(viewModel: MainViewModel) {
                 }
                 sendMessage("instruction", "BW05")
             },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xff1C1C1C),
+                contentColor = Color.White
+            ),
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 180f)
                 .size(100.dp, 60.dp)
@@ -713,7 +871,7 @@ fun DPad(viewModel: MainViewModel) {
 @Composable
 fun CarButton(viewModel: MainViewModel) {
     Button(onClick = { viewModel.displayCarDialog() },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xffed7979)),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
         modifier = Modifier
             //.heightIn(max = 30.dp)
 
@@ -770,61 +928,130 @@ class TriangleShape(direction: String="N") : Shape {
         return Outline.Generic(path)
     }
 }
+
+
 @Composable
-fun StatusMessage(viewModel: MainViewModel){
-    Box(){
+fun StatusMessage(viewModel: MainViewModel) {
+    Box {
         Column {
-            Text("Current status: ")
-            Text(viewModel.status)
+            Text(
+                text = "Current status: ",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            Text(
+                text = viewModel.status,
+                style = TextStyle(
+                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold
+                )
+            )
         }
-
     }
 }
 
 @Composable
-fun StartButtons(viewModel: MainViewModel){
-    Column {
-        Button(onClick = { // send obstacles button
-            sendObjectsList(viewModel.obstaclesList)
-        },
+fun sendObstaclesButton(viewModel: MainViewModel){
+    Button(onClick = { // send obstacles button
+        sendObjectsList(viewModel.obstaclesList)
+    },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
+        modifier = Modifier
+        //.heightIn(max = 30.dp)
+    ){
+        Text("Send Obstacles",
+            textAlign = TextAlign.Center,
             modifier = Modifier
-            //.heightIn(max = 30.dp)
-        ){
-            Text("Send Obstacles",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .wrapContentHeight()
-            )
-        }
-
-        Button(onClick = { // start fastest path
-            sendMessage("control", "start")
-        },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-
-        ){
-            Text("Start Fastest Path",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .wrapContentHeight()
-            )
-        }
-
-        Button(onClick = { // start image rec
-            sendMessage("imagerec", "start")
-        },
-            modifier = Modifier
-            //.heightIn(max = 30.dp)
-
-        ){
-            Text("Start Image Rec",
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .wrapContentHeight()
-            )
-        }
+                .wrapContentHeight()
+        )
     }
-
-
 }
+
+@Composable
+fun startFastestPathButton(viewModel: MainViewModel){
+    Button(onClick = { // start fastest path
+        sendMessage("control", "start")
+    },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
+        modifier = Modifier
+        //.heightIn(max = 30.dp)
+
+    ){
+        Text("Start Fastest Path",
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .wrapContentHeight()
+        )
+    }
+}
+
+@Composable
+fun startImageRecButton(viewModel: MainViewModel){
+    Button(onClick = { // start image rec
+        sendMessage("imagerec", "start")
+    },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
+        modifier = Modifier
+        //.heightIn(max = 30.dp)
+
+    ){
+        Text("Start Image Rec",
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .wrapContentHeight()
+        )
+    }
+}
+
+//@Composable
+//fun StartButtons(viewModel: MainViewModel){
+//    Column {
+//        Button(onClick = { // send obstacles button
+//            sendObjectsList(viewModel.obstaclesList)
+//        },
+//            colors = ButtonDefaults.buttonColors(containerColor = Color(0xffed7979)),
+//            modifier = Modifier
+//            //.heightIn(max = 30.dp)
+//        ){
+//            Text("Send Obstacles",
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier
+//                    .wrapContentHeight()
+//            )
+//        }
+//
+//        Button(onClick = { // start fastest path
+//            sendMessage("control", "start")
+//        },
+//            colors = ButtonDefaults.buttonColors(containerColor = Color(0xffed7979)),
+//            modifier = Modifier
+//            //.heightIn(max = 30.dp)
+//
+//        ){
+//            Text("Start Fastest Path",
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier
+//                    .wrapContentHeight()
+//            )
+//        }
+//
+//        Button(onClick = { // start image rec
+//            sendMessage("imagerec", "start")
+//        },
+//            colors = ButtonDefaults.buttonColors(containerColor = Color(0xffed7979)),
+//            modifier = Modifier
+//            //.heightIn(max = 30.dp)
+//
+//        ){
+//            Text("Start Image Rec",
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier
+//                    .wrapContentHeight()
+//            )
+//        }
+//    }
+//
+//
+//}
