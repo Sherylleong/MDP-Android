@@ -158,7 +158,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                     }
                                     if (obstacleDirectionPreview != null) {
                                         drawLine(
-                                            panColor,
+                                            joyColor,
                                             start,
                                             end,
                                             strokeWidth
@@ -204,20 +204,23 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                         }
 
                         // North Button
-                        Button(modifier = Modifier
+                        Button(colors = ButtonDefaults.buttonColors(containerColor = fearColor),
+                            modifier = Modifier
                             .layoutId("northButton"),
                             onClick = { obstacleDirectionPreview = "N" }) {
                             Text("North")
                         }
                         // South Button
-                        Button(modifier = Modifier
+                        Button(colors = ButtonDefaults.buttonColors(containerColor = fearColor),
+                                modifier = Modifier
                             .fillMaxWidth()
                             .layoutId("southButton"),
                             onClick = { obstacleDirectionPreview = "S" }) {
                             Text("South")
                         }
                         // East Button
-                        Button(modifier = Modifier
+                        Button(colors = ButtonDefaults.buttonColors(containerColor = fearColor),
+                            modifier = Modifier
                             .fillMaxWidth()
                             .layoutId("eastButton")
                             .rotate(90f)
@@ -227,7 +230,8 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                         }
 
                         // West Button
-                        Button(modifier = Modifier
+                        Button(colors = ButtonDefaults.buttonColors(containerColor = fearColor),
+                            modifier = Modifier
                             .layoutId("westButton")
                             .rotate(-90f)
                             .offset(y = 25.dp), // is there a better way
@@ -242,7 +246,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                             .padding(10.dp)
                     ) {
                         Button( modifier = Modifier,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                            colors = ButtonDefaults.buttonColors(containerColor = confirmColor),
                             onClick = {
                                 var direction = obstacleDirectionPreview
                                 if (direction == null) direction = "NULL"
@@ -254,7 +258,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                             Text("Confirm")
                         }
                         Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                            colors = ButtonDefaults.buttonColors(containerColor = anxietyColor),
                             onClick = { onDismiss()}) {
                             Text("Cancel")
                         }

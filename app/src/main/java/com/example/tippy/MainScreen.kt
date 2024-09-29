@@ -83,14 +83,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.json.JSONArray
 import org.json.JSONObject
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-
-
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui .unit.dp
+val panColor = Color(0xFFC603FC)
+val fearColor = Color(0xff9400f7)
+val disgustColor = Color(0xff008f1a)
+val joyColor = Color(0xffff9914)
+val confirmColor = Color(0xff2E8B57)
+val joystickBackgroundColor = Color(0xffb49fbf)
+val anxietyColor = Color(0xfffc4103)
+val sadColor = Color(0xff1c77ed)
+fun mixWhite(originalColor: Color): Color {
+    return Color(
+        red = (originalColor.red + 1f) / 2,
+        green = (originalColor.green + 1f) / 2,
+        blue = (originalColor.blue + 1f) / 2,
+        alpha = originalColor.alpha
+    )
+}
+val shadow = 6.dp
+val shadowShape = RoundedCornerShape(20.dp)
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
     val handler = Handler(Looper.getMainLooper())
     val checkInterval: Long = 2000 // 2 seconds
@@ -169,7 +189,6 @@ fun MainScreen(viewModel: MainViewModel){
             viewModel = viewModel)
     }
 }
-val panColor = Color(0xFFC603FC)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -287,7 +306,6 @@ fun Grid(
                             val height = size.height
 
 
-
                             val path = Path().apply {
                                 moveTo(width / 2, -height) // Top middle
                                 lineTo(-width, 2 * height)    // Bottom left
@@ -304,15 +322,16 @@ fun Grid(
                                         else -> 0f // Default pointing up
                                     }
                                     rotate(degrees = angle) {
-                                        val scaleFactor = 0.35f  // This reduces the size to 50% of the original
+                                        val scaleFactor =
+                                            0.35f  // This reduces the size to 50% of the original
                                         drawPath(path, color = Color.Red)
 
                                         scale(scaleFactor) {
                                             drawImage(
                                                 image = angerImageBitmap,
                                                 topLeft = Offset(
-                                                    x = - 4f * size.width,
-                                                    y = - 1.5f * size.height
+                                                    x = -4f * size.width,
+                                                    y = -1.5f * size.height
                                                 ),
                                             )
                                         }
@@ -352,7 +371,7 @@ fun Grid(
                             }
                             if (direction != null) {
                                 drawLine(
-                                    panColor,
+                                    joyColor,
                                     start,
                                     end,
                                     strokeWidth
@@ -527,7 +546,8 @@ fun GridScreen(viewModel: MainViewModel) {
                                 val label = event.toAndroidDragEvent().clipDescription.label
                                 val text = event.toAndroidDragEvent().clipData?.getItemAt(0)?.text
                                 if ((label == "obstacle") and (text == "existing")) {
-                                    val obstacleToRemove = viewModel.obstaclesList.find { it.coord == viewModel.draggedObstacleCoord }
+                                    val obstacleToRemove =
+                                        viewModel.obstaclesList.find { it.coord == viewModel.draggedObstacleCoord }
                                     viewModel.obstaclesList.remove(obstacleToRemove)
                                     Toast
                                         .makeText(
@@ -615,13 +635,13 @@ fun Console(viewModel: MainViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Joystick(viewModel)
-
+                        StatusMessage(viewModel)
                         Column(
                             verticalArrangement = Arrangement.SpaceAround,
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(top=16.dp, bottom = 16.dp)
                         ) {
-                            StatusMessage(viewModel)
+
                             sendObstaclesButton(viewModel)
                             startFastestPathButton(viewModel)
                             startImageRecButton(viewModel)
@@ -642,10 +662,10 @@ fun Console(viewModel: MainViewModel) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ObstacleDraggable() {
-    Button(
-        onClick = { /* No-op or optional click action */ },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
+    Box(
         modifier = Modifier
+            .padding(16.dp)
+            .background(fearColor, RoundedCornerShape(5.dp))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -653,9 +673,10 @@ fun ObstacleDraggable() {
         ) {
             Box(
                 modifier = Modifier
-                    .background(color = panColor)
+                    .shadow(10.dp)
+                    .background(color = Color.Black)
                     .size(30.dp, 30.dp)
-                    .dragAndDropSource {
+                    .dragAndDropSource(drawDragDecoration = { drawRect(Color(0x80000000)) }) {
                         detectTapGestures(
                             onPress = { offset ->
                                 startTransfer(
@@ -669,7 +690,12 @@ fun ObstacleDraggable() {
                             }
                         )
                     }
+
+
             )
+            {
+                Text("0_0'", color = fearColor, textAlign = TextAlign.Center,modifier = Modifier.fillMaxSize().align(Alignment.Center), )
+            }
 
             Text(
                 "Add Object (Drag the box!)",
@@ -686,8 +712,10 @@ fun ResetButton(viewModel: MainViewModel) {
         viewModel.obstaclesList.clear();
         viewModel.car.value = GridCar(Coord(2,2), "N")
     },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
-        modifier = Modifier
+        colors = ButtonDefaults.buttonColors(
+            containerColor = anxietyColor,
+            ),
+        modifier = Modifier.shadow(shadow, shadowShape)
         //.heightIn(max = 30.dp)
 
     ){
@@ -701,12 +729,12 @@ fun ResetButton(viewModel: MainViewModel) {
 @Composable
 fun Joystick(viewModel: MainViewModel) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    val size = 200.dp
+    val size = 180.dp
 
     Box(
         modifier = Modifier
             .size(size)
-            .background(Color.Gray, shape = CircleShape) // Background of the joystick
+            .background(joystickBackgroundColor, shape = CircleShape) // Background of the joystick
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragEnd = {
@@ -720,8 +748,11 @@ fun Joystick(viewModel: MainViewModel) {
                 ) { change, dragAmount ->
                     // Update the offset based on drag
                     offset = Offset(
-                        x = (offset.x + dragAmount.x).coerceIn(-100f, 100f), // Limit within the circle
-                        y = (offset.y + dragAmount.y).coerceIn(-100f, 100f)
+                        x = (offset.x + dragAmount.x).coerceIn(
+                            -90f,
+                            90f
+                        ), // Limit within the circle
+                        y = (offset.y + dragAmount.y).coerceIn(-90f, 90f)
                     )
                     change.consume() // Consume the drag event
                 }
@@ -735,9 +766,11 @@ fun Joystick(viewModel: MainViewModel) {
         // Joystick knob
         Box(
             modifier = Modifier
+                .shadow(8.dp, shape = CircleShape)
                 .size(60.dp) // Size of the knob
-                .background(Color.Blue, shape = CircleShape)
+                .background(Color.Red, shape = CircleShape)
                 .align(Alignment.Center)
+
         )
     }
 
@@ -821,7 +854,8 @@ fun DPad(viewModel: MainViewModel) {
                 contentColor = Color.White
             ),
             shape = TriangleShape(),
-            modifier = Modifier.graphicsLayer(rotationZ = 0f)
+            modifier = Modifier
+                .graphicsLayer(rotationZ = 0f)
                 .size(100.dp, 60.dp)
         ) {}
 
@@ -847,7 +881,8 @@ fun DPad(viewModel: MainViewModel) {
                     contentColor = Color.White
                 ),
                 shape = TriangleShape(),
-                modifier = Modifier.graphicsLayer(rotationZ = -90f)
+                modifier = Modifier
+                    .graphicsLayer(rotationZ = -90f)
                     .size(100.dp, 60.dp)
                     .offset(y = -(15.dp))
             ) {}
@@ -870,7 +905,8 @@ fun DPad(viewModel: MainViewModel) {
                     contentColor = Color.White
                 ),
                 shape = TriangleShape(),
-                modifier = Modifier.graphicsLayer(rotationZ = 90f)
+                modifier = Modifier
+                    .graphicsLayer(rotationZ = 90f)
                     .size(100.dp, 60.dp)
                     .offset(y = -(15.dp))
             ) {}
@@ -893,7 +929,8 @@ fun DPad(viewModel: MainViewModel) {
                 contentColor = Color.White
             ),
             shape = TriangleShape(),
-            modifier = Modifier.graphicsLayer(rotationZ = 180f)
+            modifier = Modifier
+                .graphicsLayer(rotationZ = 180f)
                 .size(100.dp, 60.dp)
         ) {}
     }
@@ -905,7 +942,7 @@ fun DPad(viewModel: MainViewModel) {
 fun CarButton(viewModel: MainViewModel) {
     Button(onClick = { viewModel.displayCarDialog() },
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
-        modifier = Modifier
+        modifier = Modifier.shadow(shadow, shadowShape)
             //.heightIn(max = 30.dp)
 
     ){
@@ -965,33 +1002,41 @@ class TriangleShape(direction: String="N") : Shape {
 
 @Composable
 fun StatusMessage(viewModel: MainViewModel) {
-    Box {
+    Box (modifier = Modifier.background(color = Color.Black, RoundedCornerShape(5.dp))
+        .size(width = 200.dp, height = 150.dp)){
         Column {
             Text(
+                color = confirmColor,
+                fontFamily = FontFamily.Monospace,
                 text = "Current status: ",
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
-                )
+                ),
+                modifier = Modifier.padding(vertical = 8.dp)
             )
             Text(
+                color = confirmColor,
                 text = viewModel.status,
+                fontFamily = FontFamily.Monospace,
                 style = TextStyle(
                     fontSize = 18.sp,
 //                    fontWeight = FontWeight.Bold
-                )
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
     }
 }
+
 
 @Composable
 fun sendObstaclesButton(viewModel: MainViewModel){
     Button(onClick = { // send obstacles button
         sendObjectsList(viewModel.obstaclesList)
     },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
-        modifier = Modifier
+        colors = ButtonDefaults.buttonColors(containerColor = sadColor),
+        modifier = Modifier.shadow(shadow, shadowShape)
         //.heightIn(max = 30.dp)
     ){
         Text("Send Obstacles",
@@ -1007,8 +1052,8 @@ fun startFastestPathButton(viewModel: MainViewModel){
     Button(onClick = { // start fastest path
         sendMessage("control", "start")
     },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
-        modifier = Modifier
+        colors = ButtonDefaults.buttonColors(containerColor = joyColor),
+        modifier = Modifier.shadow(shadow, shadowShape)
         //.heightIn(max = 30.dp)
 
     ){
@@ -1025,8 +1070,8 @@ fun startImageRecButton(viewModel: MainViewModel){
     Button(onClick = { // start image rec
         sendMessage("imagerec", "start")
     },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff2E8B57)),
-        modifier = Modifier
+        colors = ButtonDefaults.buttonColors(containerColor = joyColor),
+        modifier = Modifier.shadow(shadow, shadowShape)
         //.heightIn(max = 30.dp)
 
     ){
