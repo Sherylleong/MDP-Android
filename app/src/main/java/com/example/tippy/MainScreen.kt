@@ -664,8 +664,9 @@ fun Console(viewModel: MainViewModel) {
 fun ObstacleDraggable() {
     Box(
         modifier = Modifier
-            .padding(16.dp)
+            .shadow(10.dp)
             .background(fearColor, RoundedCornerShape(5.dp))
+
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -673,6 +674,7 @@ fun ObstacleDraggable() {
         ) {
             Box(
                 modifier = Modifier
+                    .padding(5.dp)
                     .shadow(10.dp)
                     .background(color = Color.Black)
                     .size(30.dp, 30.dp)
@@ -699,7 +701,10 @@ fun ObstacleDraggable() {
 
             Text(
                 "Add Object (Drag the box!)",
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(end = 5.dp),
+                color = Color.White
+
             )
         }
     }
@@ -1013,7 +1018,7 @@ fun StatusMessage(viewModel: MainViewModel) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
             Text(
                 color = confirmColor,
