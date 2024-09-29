@@ -10,15 +10,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.tippy.MessageViewModel
 
 class Arena : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
+    private val messageViewModel: MessageViewModel by viewModels() // Add this line to get MessageViewModel
     val TAG = "Arena"
 
     var receiverIncomingMessages: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "RECEIVING")
             val incomingMessage = intent.getStringExtra("receivedMessage")
+//            if (incomingMessage != null) {
+//                messageViewModel.updateChatLogRobot(incomingMessage)
+//            }
             // handle bluetooth incoming messages
             if (incomingMessage != null){
                 val strs = incomingMessage.split(",").toTypedArray()
@@ -49,7 +54,6 @@ class Arena : AppCompatActivity() {
                         "STATUS" -> {
                             viewModel.status = strs[1]
                         }
-
                     }
                 }
                 finally{}
@@ -65,11 +69,17 @@ class Arena : AppCompatActivity() {
         setContent {
             MainScreen(viewModel = viewModel)
         }
+        receiverIncomingMessages = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                // Handle incoming messages
+            }
+        }
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(receiverIncomingMessages, IntentFilter("incomingMessage"))
     }
 
     override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverIncomingMessages)
         super.onDestroy()
         try {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverIncomingMessages)

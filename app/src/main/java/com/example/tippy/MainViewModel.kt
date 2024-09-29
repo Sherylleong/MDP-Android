@@ -24,7 +24,7 @@ class MainViewModel : ViewModel() {
     var previewObstacle: GridObstacle =  GridObstacle(Coord(0,0), "1", null)
     var draggedObstacleCoord by mutableStateOf<Coord?>(Coord(1,1))
     var draggedOverCoord by mutableStateOf<Coord?>(null)
-
+    val messageViewModel = MessageViewModel()
 
 
     fun displayObstacleDialog(mode: String) {
@@ -59,6 +59,10 @@ class MainViewModel : ViewModel() {
 
     fun checkCoordCarCollide(coord: Coord, carCoord: Coord) : Boolean {
         return (coord.x in carCoord.x-1..carCoord.x+1) && (coord.y in carCoord.y-1..carCoord.y+1)
+    }
+
+    fun isBluetoothConnected(): Boolean {
+        return BluetoothManager.BluetoothConnectionStatus
     }
 
 }

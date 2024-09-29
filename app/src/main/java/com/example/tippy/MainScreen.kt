@@ -70,7 +70,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TabRow
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
@@ -80,6 +82,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.material3.Tab
+import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+
 
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
     val handler = Handler(Looper.getMainLooper())
@@ -549,62 +559,85 @@ fun Console(viewModel: MainViewModel) {
     // Load background image from resources
     val backgroundImage = painterResource(id = R.drawable.inside_out_ctrl_panel)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        // Set the background image
-        Image(
-            painter = backgroundImage,
-            contentDescription = null,
-            contentScale = ContentScale.Crop, // Scale image to fill the entire box
-            modifier = Modifier.fillMaxSize() // Fill the entire size of the screen
-        )
+    // State to manage which tab is currently selected
+    var selectedTab by remember { mutableStateOf(0) } // 0 for the main console, 1 for additional functions
 
-        // Overlay the UI elements on top of the background image
-        Column(
-            verticalArrangement = Arrangement.SpaceAround,
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // TabRow to hold the tabs
+        TabRow(selectedTabIndex = selectedTab) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("Main Console") }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("Communications") }
+            )
+        }
+
+        // Background image for the console
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Transparent) // Ensure background is transparent
         ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                ObstacleDraggable() // Keep this in the row
-                CarButton(viewModel)
-                ResetButton(viewModel)
-            }
+            Image(
+                painter = backgroundImage,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-//                DPad(viewModel)
-                Joystick(viewModel)
-
-                // Nest the buttons and status message in a column
+            // Main Console content
+            if (selectedTab == 0) {
                 Column(
                     verticalArrangement = Arrangement.SpaceAround,
-                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(16.dp) // Adjust padding as necessary
+                        .fillMaxSize()
+                        .background(Color.Transparent)
                 ) {
-                    StatusMessage(viewModel)
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ObstacleDraggable() // Keep this in the row
+                        CarButton(viewModel)
+                        ResetButton(viewModel)
+                    }
 
-                    sendObstaclesButton(viewModel)
-                    startFastestPathButton(viewModel)
-                    startImageRecButton(viewModel)
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Joystick(viewModel)
+
+                        Column(
+                            verticalArrangement = Arrangement.SpaceAround,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            StatusMessage(viewModel)
+                            sendObstaclesButton(viewModel)
+                            startFastestPathButton(viewModel)
+                            startImageRecButton(viewModel)
+                        }
+                    }
                 }
+            }
+
+            // Additional Functions content
+            if (selectedTab == 1) {
+                CommunicationsTab(viewModel.messageViewModel, viewModel::isBluetoothConnected)
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
