@@ -62,7 +62,6 @@ import androidx.constraintlayout.compose.Dimension
 @Composable
 fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) {
     var text by remember { mutableStateOf(viewModel.previewObstacle.number) }
-
     val startingText by remember { mutableStateOf(viewModel.previewObstacle.number) }
     var obstacleDirectionPreview: String? by remember {mutableStateOf(viewModel.previewObstacle.direction)}
     val constraints = ConstraintSet {
@@ -137,29 +136,29 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                     var start: Offset = Offset(0f, 0f)
                                     var end: Offset = Offset(0f, 0f)
                                     when (obstacleDirectionPreview) {
-                                        "north" -> {
+                                        "N" -> {
                                             start = Offset(0f, strokeWidth / 2)
                                             end = Offset(size.width, strokeWidth / 2)
                                         }
 
-                                        "south" -> {
+                                        "S" -> {
                                             start = Offset(0f, size.height - strokeWidth / 2)
                                             end = Offset(size.width, size.height - strokeWidth / 2)
                                         }
 
-                                        "east" -> {
+                                        "E" -> {
                                             start = Offset(size.width - strokeWidth / 2, 0f)
                                             end = Offset(size.width - strokeWidth / 2, size.height)
                                         }
 
-                                        "west" -> {
+                                        "W" -> {
                                             start = Offset(strokeWidth / 2, 0f)
                                             end = Offset(strokeWidth / 2, size.height)
                                         }
                                     }
                                     if (obstacleDirectionPreview != null) {
                                         drawLine(
-                                            Color.Red,
+                                            panColor,
                                             start,
                                             end,
                                             strokeWidth
@@ -207,14 +206,14 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                         // North Button
                         Button(modifier = Modifier
                             .layoutId("northButton"),
-                            onClick = { obstacleDirectionPreview = "north" }) {
+                            onClick = { obstacleDirectionPreview = "N" }) {
                             Text("North")
                         }
                         // South Button
                         Button(modifier = Modifier
                             .fillMaxWidth()
                             .layoutId("southButton"),
-                            onClick = { obstacleDirectionPreview = "south" }) {
+                            onClick = { obstacleDirectionPreview = "S" }) {
                             Text("South")
                         }
                         // East Button
@@ -223,7 +222,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                             .layoutId("eastButton")
                             .rotate(90f)
                             .offset(y = 25.dp), // is there a better way
-                            onClick = { obstacleDirectionPreview = "east" }) {
+                            onClick = { obstacleDirectionPreview = "E" }) {
                             Text("East")
                         }
 
@@ -232,7 +231,7 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                             .layoutId("westButton")
                             .rotate(-90f)
                             .offset(y = 25.dp), // is there a better way
-                            onClick = { obstacleDirectionPreview = "west" }) {
+                            onClick = { obstacleDirectionPreview = "W" }) {
                             Text("West")
                         }
                     }
@@ -249,13 +248,13 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                 if (direction == null) direction = "NULL"
                                 direction = direction.uppercase()
                                 viewModel.previewObstacle = GridObstacle(viewModel.previewObstacle.coord, text, obstacleDirectionPreview)
-                                if (viewModel.obstacleDialogMode == "new") sendMessage("ADD,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
-                                else if (viewModel.obstacleDialogMode == "existing") sendMessage("EDIT,$startingText,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
+                                //if (viewModel.obstacleDialogMode == "new") sendMessage("ADD,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
+                                //else if (viewModel.obstacleDialogMode == "existing") sendMessage("EDIT,$startingText,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
                                 onConfirm() }) {
                             Text("Confirm")
                         }
                         Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                             onClick = { onDismiss()}) {
                             Text("Cancel")
                         }

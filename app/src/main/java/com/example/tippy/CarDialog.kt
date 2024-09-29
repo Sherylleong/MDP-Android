@@ -153,14 +153,14 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                         .asComposePath()
                                     onDrawBehind {
                                         val angle = when (carDirectionPreview) {
-                                            "north" -> -90f
-                                            "east" -> 0f
-                                            "south" -> 90f
-                                            "west" -> 180f
+                                            "N" -> -90f
+                                            "E" -> 0f
+                                            "S" -> 90f
+                                            "W" -> 180f
                                             else -> -90f // Default pointing up
                                         }
                                         rotate(degrees = angle) {
-                                            drawPath(roundedPolygonPath, color = Color.Blue)
+                                            drawPath(roundedPolygonPath, color = Color.Red)
                                         }
 
 
@@ -171,14 +171,14 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                         // North Button
                         Button(modifier = Modifier
                             .layoutId("northButtonCar"),
-                            onClick = { carDirectionPreview = "north" }) {
+                            onClick = { carDirectionPreview = "N" }) {
                             Text("North")
                         }
                         // South Button
                         Button(modifier = Modifier
                             .fillMaxWidth()
                             .layoutId("southButtonCar"),
-                            onClick = { carDirectionPreview = "south" }) {
+                            onClick = { carDirectionPreview = "S" }) {
                             Text("South")
                         }
                         // East Button
@@ -187,7 +187,7 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                             .layoutId("eastButtonCar")
                             .rotate(90f)
                             .offset(y = 25.dp), // is there a better way
-                            onClick = { carDirectionPreview = "east" }) {
+                            onClick = { carDirectionPreview = "E" }) {
                             Text("East")
                         }
 
@@ -196,7 +196,7 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                             .layoutId("westButtonCar")
                             .rotate(-90f)
                             .offset(y = 25.dp), // is there a better way
-                            onClick = { carDirectionPreview = "west" }) {
+                            onClick = { carDirectionPreview = "W" }) {
                             Text("West")
                         }
                     }
@@ -310,7 +310,7 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                     }
                                     viewModel.previewCar = GridCar(Coord(x, y), carDirectionPreview)
                                     onConfirm()
-                                    sendMessage("ROBOT,${viewModel.previewCar.coord.x},${viewModel.previewCar.coord.x},${viewModel.previewCar.direction}")
+                                    //sendMessage("ROBOT,${viewModel.previewCar.coord.x},${viewModel.previewCar.coord.x},${viewModel.previewCar.direction}")
                                 }
 
                                  }) {

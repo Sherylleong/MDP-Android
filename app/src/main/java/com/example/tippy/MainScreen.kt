@@ -64,10 +64,17 @@ import android.bluetooth.BluetoothAdapter
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.tooling.preview.Preview
+import org.json.JSONArray
 import org.json.JSONObject
 
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
@@ -90,13 +97,37 @@ fun startBluetoothStatusChecker(viewModel: MainViewModel) {
 }
 
 
-fun sendMessage(value: String) {
+fun sendObjectsList(obstaclesList: List<GridObstacle>) {
     if (BluetoothManager.BluetoothConnectionStatus) {
-        val jsonObject = JSONObject().apply {
-            put("cat", "instruction")
-            put("value", value)
+        val jsonObstaclesArray = JSONArray().apply {
+            obstaclesList.forEach { item ->
+                val jsonObject = JSONObject().apply {
+                    put("x", item.coord.x)
+                    put("y", item.coord.y)
+                    put("d", item.direction)
+                    put("id", item.number)
+                }
+                put(jsonObject) // Add JSON object to the array
+            }
         }
 
+        val mainJsonObject = JSONObject().apply {
+            put("cat", "obstacles")
+            put("value", JSONObject().apply {
+                put("obstacles", jsonObstaclesArray)
+            })
+        }
+        val bytes = mainJsonObject.toString().toByteArray()
+        BluetoothManager.write(bytes)
+    }
+}
+
+fun sendMessage(cat: String, value: String) {
+    if (BluetoothManager.BluetoothConnectionStatus) {
+        val jsonObject = JSONObject().apply {
+            put("cat", cat)
+            put("value", value)
+        }
         val bytes = jsonObject.toString().toByteArray()
         BluetoothManager.write(bytes)
     }
@@ -124,7 +155,7 @@ fun MainScreen(viewModel: MainViewModel){
             viewModel = viewModel)
     }
 }
-
+val panColor = Color(0xFFC603FC)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -132,16 +163,13 @@ fun Grid(
     viewModel: MainViewModel,
 ) {
     val obstaclesList = viewModel.obstaclesList
-    val car by remember { viewModel.car }
+    val car by viewModel.car
     val rows = 20
     val columns = 20
-    //var draggedObstacleCoord by remember { mutableStateOf<Coord?>(null) }
-    var draggedObstacleCoord = viewModel.draggedObstacleCoord
-    var carPosXAbs by remember { mutableStateOf(1) }
-    var carPosYAbs by remember { mutableStateOf(1) }
+    val angerImageBitmap: ImageBitmap = ImageBitmap.imageResource(id = R.drawable.anger_transparent)  //  image resource
     LazyVerticalGrid(columns = GridCells.Fixed(columns+2),
         contentPadding = PaddingValues(
-            top = 15.dp,
+            //top = 15.dp,
             start = 11.2.dp,
             end = 11.2.dp,
         ),
@@ -149,20 +177,20 @@ fun Grid(
     ) {
 
         items((rows + 2) * (columns + 2)) { index ->
-            val row =  21 - (index / (columns + 2))
-            val col = index % (columns + 2)
-            val isDark = (row + col) % 2 == 0
-            val coord = Coord(col, row)
+            val row =  remember { 21 - (index / (columns + 2))}
+            val col = remember { index % (columns + 2)}
+            val isDark = remember { (row + col) % 2 == 0}
+            val coord = remember { Coord(col, row)}
             val hasObstacle = obstaclesList.find { it.coord == coord }
             val number = hasObstacle?.number ?: ""
             val direction = hasObstacle?.direction
-            val isSelectedVehicle = null
-            val panColor = Color.Red
+            //  Color(0xFFcafe8f) else Color(0xff88c971)
+            //  Color(0xFF4CAF50) else Color(0xFF8BC34A)
             var draggedOver by remember {mutableStateOf(false)}
-            val border = (row == 0) or (col==0) or (row == columns+1) or (col == columns+1)
-            val backgroundColor = if (draggedOver) panColor else if (isDark) Color(0xFF4CAF50) else Color(0xFF8BC34A)
+            val border = remember {(row == 0) or (col==0) or (row == columns+1) or (col == columns+1)}
+            val backgroundColor = if (draggedOver) panColor else if (isDark) Color(0xFFcafe8f) else Color(0xff88c971)
             val selectedColor = Color.Black
-            val angerImageBitmap: ImageBitmap = ImageBitmap.imageResource(id = R.drawable.anger_transparent) //  image resource
+
 
 
 
@@ -177,7 +205,7 @@ fun Grid(
                         .wrapContentHeight()
                         //.border(width = 1.dp, color = Color.White)
                         .fillMaxSize()
-                        .background(if (draggedOverRow) Color.Red else Color.Transparent)
+                        .background(if (draggedOverRow) panColor else Color.Transparent)
                     ){
                         Text(
                             "$row",
@@ -202,7 +230,7 @@ fun Grid(
                         .wrapContentHeight()
                         //.border(width = 1.dp, color = Color.White)
                         .fillMaxSize()
-                        .background(if (draggedOverCol) Color.Red else Color.Transparent)
+                        .background(if (draggedOverCol) panColor else Color.Transparent)
                     ){
 
 
@@ -244,6 +272,8 @@ fun Grid(
                             val width = size.width
                             val height = size.height
 
+
+
                             val path = Path().apply {
                                 moveTo(width / 2, -height) // Top middle
                                 lineTo(-width, 2 * height)    // Bottom left
@@ -253,26 +283,22 @@ fun Grid(
                             onDrawBehind {
                                 if (coord == car.coord) {
                                     val angle = when (car.direction) {
-                                        "north" -> 0f
-                                        "east" -> 90f
-                                        "south" -> 180f
-                                        "west" -> -90f
+                                        "N" -> 0f
+                                        "E" -> 90f
+                                        "S" -> 180f
+                                        "W" -> -90f
                                         else -> 0f // Default pointing up
                                     }
                                     rotate(degrees = angle) {
-                                        val imageWidth = angerImageBitmap.width.toFloat()
-                                        val imageHeight = angerImageBitmap.height.toFloat()
-                                        val scaleFactor = 0.45f  // This reduces the size to 50% of the original
-
-                                        val scaledWidth = (angerImageBitmap.width * scaleFactor).toInt()
-                                        val scaledHeight = (angerImageBitmap.height * scaleFactor).toInt()
+                                        val scaleFactor = 0.35f  // This reduces the size to 50% of the original
                                         drawPath(path, color = Color.Red)
+
                                         scale(scaleFactor) {
                                             drawImage(
                                                 image = angerImageBitmap,
                                                 topLeft = Offset(
-                                                    x = - 3f * size.width,
-                                                    y = - size.height
+                                                    x = - 4f * size.width,
+                                                    y = - 1.5f * size.height
                                                 ),
                                             )
                                         }
@@ -290,29 +316,29 @@ fun Grid(
                             var start: Offset = Offset(0f, 0f)
                             var end: Offset = Offset(0f, 0f)
                             when (direction) {
-                                "north" -> {
+                                "N" -> {
                                     start = Offset(0f, strokeWidth / 2)
                                     end = Offset(size.width, strokeWidth / 2)
                                 }
 
-                                "south" -> {
+                                "S" -> {
                                     start = Offset(0f, size.height - strokeWidth / 2)
                                     end = Offset(size.width, size.height - strokeWidth / 2)
                                 }
 
-                                "east" -> {
+                                "E" -> {
                                     start = Offset(size.width - strokeWidth / 2, 0f)
                                     end = Offset(size.width - strokeWidth / 2, size.height)
                                 }
 
-                                "west" -> {
+                                "W" -> {
                                     start = Offset(strokeWidth / 2, 0f)
                                     end = Offset(strokeWidth / 2, size.height)
                                 }
                             }
                             if (direction != null) {
                                 drawLine(
-                                    Color.Red,
+                                    panColor,
                                     start,
                                     end,
                                     strokeWidth
@@ -402,7 +428,7 @@ fun Grid(
                                                             obstaclesList[index].direction
                                                         )
                                                     }
-                                                    sendMessage("EDIT,${obstaclesList[index].number},${obstaclesList[index].number},${coord.x},${coord.y}},${obstaclesList[index].direction}")
+                                                    // sendMessage("EDIT,${obstaclesList[index].number},${obstaclesList[index].number},${coord.x},${coord.y}},${obstaclesList[index].direction}")
 
                                                 } else {
                                                     Toast
@@ -461,12 +487,17 @@ fun GridScreen(viewModel: MainViewModel) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(R.drawable.speedometer),
+            painter = painterResource(R.drawable.inside_out_wallpaper_2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-
+        // Dark Overlay
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f)) // Adjust alpha for darkness
+        )
         Column (horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
@@ -491,7 +522,7 @@ fun GridScreen(viewModel: MainViewModel) {
                                             Toast.LENGTH_SHORT
                                         )
                                         .show()
-                                    sendMessage("SUB,${obstacleToRemove!!.number}")
+                                    //sendMessage("SUB,${obstacleToRemove!!.number}")
                                 }
                                 return true
                             }
@@ -504,33 +535,55 @@ fun GridScreen(viewModel: MainViewModel) {
                     })
         ){
             Grid(viewModel)
-            Row (horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically) {
-                ObstacleDraggable()
-                CarButton(viewModel)
-                ResetButton(viewModel)
-            }
-            Row {
-                DPad(viewModel)
-                StatusMessage(viewModel)
-            }
-
-
-            GridLog(viewModel)
+            Console(viewModel)
         }
     }
 }
+
+@Composable
+fun Console(viewModel: MainViewModel){
+    Column (
+        verticalArrangement = Arrangement.SpaceAround,
+        modifier = Modifier
+        .background(color = Color.White)
+        .fillMaxSize()
+    ){
+        Row (horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+             {
+            ObstacleDraggable()
+            CarButton(viewModel)
+            ResetButton(viewModel)
+        }
+        Row (horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        {
+            DPad(viewModel)
+            StatusMessage(viewModel)
+            StartButtons(viewModel)
+        }
+    }
+
+}
+
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ObstacleDraggable() {
-    Box (
-        modifier = Modifier
-            .background(color = Color.Red)
-            //.size(20.dp, 20.dp)
-            //.heightIn(max = 30.dp)
-            .dragAndDropSource {
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier){
+            Box(modifier = Modifier
+                .background(color = panColor)
+                .size(30.dp, 30.dp)
+                .dragAndDropSource {
                 detectTapGestures(
                     onPress = { offset ->
                         startTransfer(
@@ -543,13 +596,18 @@ fun ObstacleDraggable() {
                         )
                     })
             }
+            )
+            Text("Add Object")
+        }
 
-    ){Text("Add Object")}
+
 }
 
 @Composable
 fun ResetButton(viewModel: MainViewModel) {
     Button(onClick = {
+        viewModel.obstaclesList.clear();
+        viewModel.car.value = GridCar(Coord(2,2), "N")
     },
         modifier = Modifier
         //.heightIn(max = 30.dp)
@@ -569,39 +627,46 @@ fun DPad(viewModel: MainViewModel) {
     val x = viewModel.car.value.coord.x
     val y = viewModel.car.value.coord.y
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier) {
         // North Button (Forward)
         Button(
             onClick = {
                 val dir = viewModel.car.value.direction
                 when (dir) {
-                    "north" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
-                    "south" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
-                    "east" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
-                    "west" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    "N" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "S" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "E" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    "W" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                 }
-                sendMessage("FW05")
+                sendMessage("instruction","FW05")
             },
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 0f)
+                .size(100.dp, 60.dp)
         ) {}
 
         // West, Placeholder, and East Buttons
-        Row {
+        Row (horizontalArrangement =Arrangement.SpaceBetween,
+            modifier = Modifier
+            .padding(bottom = 30.dp, top = 30.dp)
+        ){
             Button(
                 onClick = {
                     val dir = viewModel.car.value.direction
                     when (dir) {
-                        "north" -> viewModel.car.value = viewModel.car.value.copy(direction = "west")
-                        "south" -> viewModel.car.value = viewModel.car.value.copy(direction = "east")
-                        "east" -> viewModel.car.value = viewModel.car.value.copy(direction = "north")
-                        "west" -> viewModel.car.value = viewModel.car.value.copy(direction = "south")
+                        "N" -> viewModel.car.value = viewModel.car.value.copy(direction = "W")
+                        "S" -> viewModel.car.value = viewModel.car.value.copy(direction = "E")
+                        "E" -> viewModel.car.value = viewModel.car.value.copy(direction = "N")
+                        "W" -> viewModel.car.value = viewModel.car.value.copy(direction = "S")
                     }
                     viewModel.previewCar = viewModel.car.value
-                    sendMessage("FL05")
+                    sendMessage("instruction", "FL05")
                 },
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = -90f)
+                    .size(100.dp, 60.dp)
+                    .offset(y = -(15.dp))
             ) {}
 
             Spacer(modifier = Modifier.size(50.dp)) // Central space or placeholder
@@ -610,15 +675,17 @@ fun DPad(viewModel: MainViewModel) {
                 onClick = {
                     val dir = viewModel.car.value.direction
                     when (dir) {
-                        "north" -> viewModel.car.value = viewModel.car.value.copy(direction = "east")
-                        "south" -> viewModel.car.value = viewModel.car.value.copy(direction = "west")
-                        "east" -> viewModel.car.value = viewModel.car.value.copy(direction = "south")
-                        "west" -> viewModel.car.value = viewModel.car.value.copy(direction = "north")
+                        "N" -> viewModel.car.value = viewModel.car.value.copy(direction = "E")
+                        "S" -> viewModel.car.value = viewModel.car.value.copy(direction = "W")
+                        "E" -> viewModel.car.value = viewModel.car.value.copy(direction = "S")
+                        "W" -> viewModel.car.value = viewModel.car.value.copy(direction = "N")
                     }
-                    sendMessage("FR05")
+                    sendMessage("instruction", "FR05")
                 },
                 shape = TriangleShape(),
                 modifier = Modifier.graphicsLayer(rotationZ = 90f)
+                    .size(100.dp, 60.dp)
+                    .offset(y = -(15.dp))
             ) {}
         }
 
@@ -627,15 +694,16 @@ fun DPad(viewModel: MainViewModel) {
             onClick = {
                 val dir = viewModel.car.value.direction
                 when (dir) {
-                    "north" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
-                    "south" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
-                    "east" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
-                    "west" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
+                    "N" -> if (y > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y - 1))
+                    "S" -> if (y < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x, y + 1))
+                    "E" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
+                    "W" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                 }
-                sendMessage("BW05")
+                sendMessage("instruction", "BW05")
             },
             shape = TriangleShape(),
             modifier = Modifier.graphicsLayer(rotationZ = 180f)
+                .size(100.dp, 60.dp)
         ) {}
     }
 }
@@ -645,6 +713,7 @@ fun DPad(viewModel: MainViewModel) {
 @Composable
 fun CarButton(viewModel: MainViewModel) {
     Button(onClick = { viewModel.displayCarDialog() },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xffed7979)),
         modifier = Modifier
             //.heightIn(max = 30.dp)
 
@@ -672,13 +741,13 @@ fun GridLog(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 }
 
 
-class TriangleShape(direction: String="north") : Shape {
+class TriangleShape(direction: String="N") : Shape {
     val size = 100.dp
     val angle = when (direction) {
-        "north" -> 0f
-        "east" -> 90f
-        "south" -> 180f
-        "west" -> -90f
+        "N" -> 0f
+        "E" -> 90f
+        "S" -> 180f
+        "W" -> -90f
         else -> 0f // Default pointing up
     }
     override fun createOutline(
@@ -710,4 +779,52 @@ fun StatusMessage(viewModel: MainViewModel){
         }
 
     }
+}
+
+@Composable
+fun StartButtons(viewModel: MainViewModel){
+    Column {
+        Button(onClick = { // send obstacles button
+            sendObjectsList(viewModel.obstaclesList)
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+        ){
+            Text("Send Obstacles",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .wrapContentHeight()
+            )
+        }
+
+        Button(onClick = { // start fastest path
+            sendMessage("control", "start")
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+
+        ){
+            Text("Start Fastest Path",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .wrapContentHeight()
+            )
+        }
+
+        Button(onClick = { // start image rec
+            sendMessage("imagerec", "start")
+        },
+            modifier = Modifier
+            //.heightIn(max = 30.dp)
+
+        ){
+            Text("Start Image Rec",
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .wrapContentHeight()
+            )
+        }
+    }
+
+
 }
