@@ -25,6 +25,9 @@ class MainViewModel : ViewModel() {
     var draggedObstacleCoord by mutableStateOf<Coord?>(Coord(1,1))
     var draggedOverCoord by mutableStateOf<Coord?>(null)
     val messageViewModel = MessageViewModel()
+    var isTimerRunning by mutableStateOf(false)
+    lateinit var savedMapsManager: SavedMapsManager
+
 
 
     fun displayObstacleDialog(mode: String) {

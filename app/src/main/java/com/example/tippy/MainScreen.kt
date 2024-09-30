@@ -93,6 +93,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui .unit.dp
+import kotlinx.coroutines.delay
+
 val panColor = Color(0xFFC603FC)
 val fearColor = Color(0xff9400f7)
 val disgustColor = Color(0xff008f1a)
@@ -101,6 +103,7 @@ val confirmColor = Color(0xff2E8B57)
 val joystickBackgroundColor = Color(0xffb49fbf)
 val anxietyColor = Color(0xfffc4103)
 val sadColor = Color(0xff1c77ed)
+val envyColor = Color(0xff00bdb0)
 fun mixWhite(originalColor: Color): Color {
     return Color(
         red = (originalColor.red + 1f) / 2,
@@ -131,7 +134,7 @@ fun startBluetoothStatusChecker(viewModel: MainViewModel) {
 }
 
 
-fun sendObjectsList(obstaclesList: List<GridObstacle>) {
+fun sendObjectsList(obstaclesList: List<GridObstacle>, viewModel: MainViewModel) {
     if (BluetoothManager.BluetoothConnectionStatus) {
         val jsonObstaclesArray = JSONArray().apply {
             obstaclesList.forEach { item ->
@@ -151,19 +154,21 @@ fun sendObjectsList(obstaclesList: List<GridObstacle>) {
                 put("obstacles", jsonObstaclesArray)
             })
         }
-        val bytes = mainJsonObject.toString().toByteArray()
-        BluetoothManager.write(bytes)
+        //val bytes = mainJsonObject.toString().toByteArray()
+        //BluetoothManager.write(bytes) // send to AMD/RPI
+        viewModel.messageViewModel.sendMessage(mainJsonObject.toString(), { true })
     }
 }
 
-fun sendMessage(cat: String, value: String) {
+fun sendMessage(cat: String, value: String, viewModel: MainViewModel) {
     if (BluetoothManager.BluetoothConnectionStatus) {
         val jsonObject = JSONObject().apply {
             put("cat", cat)
             put("value", value)
         }
-        val bytes = jsonObject.toString().toByteArray()
-        BluetoothManager.write(bytes)
+        //val bytes = jsonObject.toString().toByteArray()
+        //BluetoothManager.write(bytes)
+        viewModel.messageViewModel.sendMessage(jsonObject.toString(), { true })
     }
 }
 
@@ -626,6 +631,8 @@ fun Console(viewModel: MainViewModel) {
                     ) {
                         ObstacleDraggable() // Keep this in the row
                         CarButton(viewModel)
+                        saveMapButton(viewModel)
+                        loadMapButton(viewModel)
                         ResetButton(viewModel)
                     }
 
@@ -696,7 +703,9 @@ fun ObstacleDraggable() {
 
             )
             {
-                Text("0_0'", color = fearColor, textAlign = TextAlign.Center,modifier = Modifier.fillMaxSize().align(Alignment.Center), )
+                Text("0_0'", color = fearColor, textAlign = TextAlign.Center,modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center), )
             }
 
             Text(
@@ -724,7 +733,7 @@ fun ResetButton(viewModel: MainViewModel) {
         //.heightIn(max = 30.dp)
 
     ){
-        Text("Reset All",
+        Text("Reset Map",
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .wrapContentHeight()
@@ -795,7 +804,7 @@ fun Joystick(viewModel: MainViewModel) {
                     "E" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                     "W" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                 }
-                sendMessage("instruction","FW05")
+                sendMessage("instruction","FW05", viewModel)
 
             }
             offset.y > threshold -> {
@@ -807,7 +816,7 @@ fun Joystick(viewModel: MainViewModel) {
                     "E" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                     "W" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                 }
-                sendMessage("instruction", "BW05")
+                sendMessage("instruction", "BW05", viewModel)
             }
             offset.x < -threshold -> {
                 // Rotate left
@@ -818,7 +827,7 @@ fun Joystick(viewModel: MainViewModel) {
                     "E" -> "N"
                     else -> viewModel.car.value.direction
                 })
-                sendMessage("instruction", "FL05") // Adjust to your left turn instruction
+                sendMessage("instruction", "FL05", viewModel) // Adjust to your left turn instruction
             }
             offset.x > threshold -> {
                 // Rotate right
@@ -829,7 +838,7 @@ fun Joystick(viewModel: MainViewModel) {
                     "W" -> "N"
                     else -> viewModel.car.value.direction
                 })
-                sendMessage("instruction", "FR05") // Adjust to your right turn instruction
+                sendMessage("instruction", "FR05", viewModel) // Adjust to your right turn instruction
             }
         }
     }
@@ -852,7 +861,8 @@ fun DPad(viewModel: MainViewModel) {
                     "E" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                     "W" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                 }
-                sendMessage("instruction","FW05")
+
+                sendMessage("instruction","FW05", viewModel)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xff1C1C1C),
@@ -879,7 +889,7 @@ fun DPad(viewModel: MainViewModel) {
                         "W" -> viewModel.car.value = viewModel.car.value.copy(direction = "S")
                     }
                     viewModel.previewCar = viewModel.car.value
-                    sendMessage("instruction", "FL05")
+                    sendMessage("instruction", "FL05", viewModel)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xff1C1C1C),
@@ -903,7 +913,7 @@ fun DPad(viewModel: MainViewModel) {
                         "E" -> viewModel.car.value = viewModel.car.value.copy(direction = "S")
                         "W" -> viewModel.car.value = viewModel.car.value.copy(direction = "N")
                     }
-                    sendMessage("instruction", "FR05")
+                    sendMessage("instruction", "FR05", viewModel)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xff1C1C1C),
@@ -927,7 +937,7 @@ fun DPad(viewModel: MainViewModel) {
                     "E" -> if (x > 2) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x - 1, y))
                     "W" -> if (x < 19) viewModel.car.value = viewModel.car.value.copy(coord = Coord(x + 1, y))
                 }
-                sendMessage("instruction", "BW05")
+                sendMessage("instruction", "BW05", viewModel)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xff1C1C1C),
@@ -1007,7 +1017,8 @@ class TriangleShape(direction: String="N") : Shape {
 
 @Composable
 fun StatusMessage(viewModel: MainViewModel) {
-    Box (modifier = Modifier.background(color = Color.Black, RoundedCornerShape(5.dp))
+    Box (modifier = Modifier
+        .background(color = Color.Black, RoundedCornerShape(5.dp))
         .size(width = 200.dp, height = 150.dp)){
         Column {
             Text(
@@ -1030,6 +1041,7 @@ fun StatusMessage(viewModel: MainViewModel) {
                 ),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
+            TimerText(viewModel)
         }
     }
 }
@@ -1038,7 +1050,7 @@ fun StatusMessage(viewModel: MainViewModel) {
 @Composable
 fun sendObstaclesButton(viewModel: MainViewModel){
     Button(onClick = { // send obstacles button
-        sendObjectsList(viewModel.obstaclesList)
+        sendObjectsList(viewModel.obstaclesList, viewModel)
     },
         colors = ButtonDefaults.buttonColors(containerColor = sadColor),
         modifier = Modifier.shadow(shadow, shadowShape)
@@ -1055,7 +1067,8 @@ fun sendObstaclesButton(viewModel: MainViewModel){
 @Composable
 fun startFastestPathButton(viewModel: MainViewModel){
     Button(onClick = { // start fastest path
-        sendMessage("control", "start")
+        sendMessage("control", "start", viewModel)
+        viewModel.isTimerRunning = true
     },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),
         modifier = Modifier.shadow(shadow, shadowShape)
@@ -1073,7 +1086,8 @@ fun startFastestPathButton(viewModel: MainViewModel){
 @Composable
 fun startImageRecButton(viewModel: MainViewModel){
     Button(onClick = { // start image rec
-        sendMessage("imagerec", "start")
+        sendMessage("imagerec", "start", viewModel)
+        viewModel.isTimerRunning = true
     },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),
         modifier = Modifier.shadow(shadow, shadowShape)
@@ -1086,6 +1100,71 @@ fun startImageRecButton(viewModel: MainViewModel){
                 .wrapContentHeight()
         )
     }
+}
+
+@Composable
+fun TimerText(viewModel: MainViewModel) {
+    var startTime by remember { mutableStateOf(0L) }
+    var elapsedTime by remember { mutableStateOf(0L) }
+    val isRunning = viewModel.isTimerRunning
+    // Stopwatch logic
+    LaunchedEffect(isRunning) {
+        startTime = System.currentTimeMillis() - elapsedTime // Adjust start time
+        while (isRunning) {
+            elapsedTime = System.currentTimeMillis() - startTime // Calculate elapsed time
+            delay(10) // Delay for 10 milliseconds
+        }
+
+    }
+    val seconds = (elapsedTime / 1000) % 60
+    val minutes = (elapsedTime / 60000) % 60
+    val milliseconds = (elapsedTime % 1000) / 10 // Convert to two digits
+    Text(
+        color = confirmColor,
+        fontFamily = FontFamily.Monospace,
+        text = "$minutes : $seconds : $milliseconds",
+        style = TextStyle(
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+
+}
+@Composable
+fun saveMapButton(viewModel: MainViewModel) {
+    val context = LocalContext.current
+    Button(onClick = {
+        viewModel.savedMapsManager.saveCarPos(viewModel.car.value)
+        viewModel.savedMapsManager.saveObstaclesList(viewModel.obstaclesList)
+        Toast.makeText(context, "Map saved!", Toast.LENGTH_SHORT).show()
+    },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = envyColor,
+        ),
+        modifier = Modifier.shadow(shadow, shadowShape)
+    ){Text("Save Map", color = Color.White)}
+    //.heightIn(max = 30.dp)
+}
+@Composable
+fun loadMapButton(viewModel: MainViewModel) {
+    val context = LocalContext.current
+    Button(onClick = {
+        val car = viewModel.savedMapsManager.loadCarPos()
+        val obstaclesList = viewModel.savedMapsManager.loadObstaclesList()
+        println("qqq")
+        println(obstaclesList)
+        viewModel.car.value = car
+        viewModel.obstaclesList.clear()
+        viewModel.obstaclesList.addAll(obstaclesList)
+        Toast.makeText(context, "Map loaded!", Toast.LENGTH_SHORT).show()
+    },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = envyColor,
+        ),
+        modifier = Modifier.shadow(shadow, shadowShape)
+    ){Text("Load Map", color = Color.White)}
+    //.heightIn(max = 30.dp)
 }
 
 //@Composable

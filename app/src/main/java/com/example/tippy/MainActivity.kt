@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         println("OnCreate")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContentView(R.layout.home);
 
         val arenaButton: ImageButton = findViewById(R.id.arena_button)

@@ -5,8 +5,8 @@
 
     <item>
         <shape android:shape="oval">
-            <solid android:color="#FFFF0000"/> <!-- Opaque background -->
-            <stroke android:width="20dip" android:color="#40FF0000"/>
+            <solid android:color="#FFFFFFFF"/> <!-- Opaque background -->
+            <stroke android:width="20dip" android:color="#77FFFFFF"/>
         </shape>
     </item>
 

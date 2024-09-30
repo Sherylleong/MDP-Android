@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app-release">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-09-30T03:01:40.850499300Z">
+        <DropdownSelection timestamp="2024-09-30T12:11:49.254494900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=R9JT1089PJD" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Sheryl\.android\avd\New_Device_mdp_API_35.avd" />
             </handle>
           </Target>
         </DropdownSelection>

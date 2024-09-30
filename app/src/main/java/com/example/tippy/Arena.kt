@@ -26,6 +26,7 @@ class Arena : AppCompatActivity() {
 //            }
             // handle bluetooth incoming messages
             if (incomingMessage != null){
+                Log.d(TAG, "MEZSAAGESGE")
                 val strs = incomingMessage.split(",").toTypedArray()
                 try {
                     when (strs[0]) {
@@ -47,9 +48,10 @@ class Arena : AppCompatActivity() {
                         "ROBOT" -> { //change car details ROBOT, <x>, <y>, <direction>
                             val x = strs[1].toInt()
                             val y = strs[2].toInt()
-                            val direction = strs[3].lowercase()
+                            val direction = strs[3]
                             val toUpdateCar = GridCar(Coord(x,y), direction)
                             viewModel.car.value = toUpdateCar
+                            println(toUpdateCar)
                             }
                         "STATUS" -> {
                             viewModel.status = strs[1]
@@ -66,14 +68,12 @@ class Arena : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val savedMapsManager = SavedMapsManager(context = this)
+        viewModel.savedMapsManager = savedMapsManager
         setContent {
             MainScreen(viewModel = viewModel)
         }
-        receiverIncomingMessages = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                // Handle incoming messages
-            }
-        }
+
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(receiverIncomingMessages, IntentFilter("incomingMessage"))
     }
