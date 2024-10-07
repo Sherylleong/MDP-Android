@@ -11,7 +11,40 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.tippy.MessageViewModel
-
+import org.json.JSONObject
+val idToCharMap: Map<String, String> = mapOf(
+    "20" to "A",
+    "21" to "B",
+    "22" to "C",
+    "23" to "D",
+    "24" to "E",
+    "25" to "F",
+    "26" to "G",
+    "27" to "H",
+    "28" to "S",
+    "29" to "T",
+    "30" to "U",
+    "31" to "V",
+    "32" to "W",
+    "33" to "X",
+    "34" to "Y",
+    "35" to "Z",
+    "36" to "Up",
+    "37" to "Down",
+    "38" to "Right",
+    "39" to "Left",
+    "40" to "Circle",
+    "41" to "Bullseye",
+    "11" to "1",
+    "12" to "2",
+    "13" to "3",
+    "14" to "4",
+    "15" to "5",
+    "16" to "6",
+    "17" to "7",
+    "18" to "8",
+    "19" to "9"
+)
 class Arena : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val messageViewModel: MessageViewModel by viewModels() // Add this line to get MessageViewModel
@@ -27,34 +60,27 @@ class Arena : AppCompatActivity() {
             // handle bluetooth incoming messages
             if (incomingMessage != null){
                 Log.d(TAG, "MEZSAAGESGE")
-                val strs = incomingMessage.split(",").toTypedArray()
                 try {
-                    when (strs[0]) {
-                        "TARGET" -> { // change number on obstacle
-                            val oriNumber = strs[1]
-                            val newNumber = strs[2]
-                            var direction: String? = null
-                            if (strs.size == 4) { // there is a 4th str for direction
-                                direction = strs[3].lowercase()
-                            }
-                            println(oriNumber+ newNumber)
-                            val toReplaceNumberObstacle = viewModel.obstaclesList.find { it.number == oriNumber }
+                    val jsonObject = JSONObject(incomingMessage)
+                    val cat = jsonObject.getString("cat")
+                    when (cat) {
+                        "location" -> {
+                            val valueObject = jsonObject.getJSONObject("value")
+                            val x = valueObject.getInt("x")
+                            val y = valueObject.getInt("y")
+                            val direction = valueObject.getString("d")
+                            viewModel.car.value = GridCar(Coord(x,y), direction)
+                        }
+                        "image-rec" -> {
+                            val valueObject = jsonObject.getJSONObject("value")
+                            val obstacle_id = valueObject.getString("obstacle_id")
+                            val image_id = valueObject.getString("image_id")
+                            val toReplaceNumberObstacle = viewModel.obstaclesList.find { it.number == obstacle_id }
                             if (toReplaceNumberObstacle != null) {
-                                val toAddObstacle = GridObstacle(toReplaceNumberObstacle.coord, newNumber ,direction)
+                                val toAddObstacle = GridObstacle(toReplaceNumberObstacle.coord, idToCharMap[image_id]!! ,null)
                                 viewModel.obstaclesList.remove(toReplaceNumberObstacle)
                                 viewModel.obstaclesList.add(toAddObstacle)
                             }
-                        }
-                        "ROBOT" -> { //change car details ROBOT, <x>, <y>, <direction>
-                            val x = strs[1].toInt()
-                            val y = strs[2].toInt()
-                            val direction = strs[3]
-                            val toUpdateCar = GridCar(Coord(x,y), direction)
-                            viewModel.car.value = toUpdateCar
-                            println(toUpdateCar)
-                            }
-                        "STATUS" -> {
-                            viewModel.status = strs[1]
                         }
                     }
                 }

@@ -1068,6 +1068,7 @@ fun sendObstaclesButton(viewModel: MainViewModel){
 fun startFastestPathButton(viewModel: MainViewModel){
     Button(onClick = { // start fastest path
         sendMessage("control", "start", viewModel)
+        viewModel.status = "Running fastest path task"
         viewModel.isTimerRunning = true
     },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),
@@ -1087,6 +1088,7 @@ fun startFastestPathButton(viewModel: MainViewModel){
 fun startImageRecButton(viewModel: MainViewModel){
     Button(onClick = { // start image rec
         sendMessage("imagerec", "start", viewModel)
+        viewModel.status = "Running image recognition task"
         viewModel.isTimerRunning = true
     },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),
