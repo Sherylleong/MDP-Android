@@ -43,7 +43,8 @@ val idToCharMap: Map<String, String> = mapOf(
     "16" to "6",
     "17" to "7",
     "18" to "8",
-    "19" to "9"
+    "19" to "9",
+    "99" to "?"
 )
 class Arena : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
