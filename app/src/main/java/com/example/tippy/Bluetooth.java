@@ -208,43 +208,48 @@ public class Bluetooth extends AppCompatActivity {
             @SuppressLint("MissingPermission")
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
-                if (isChecked) {
-                    compoundButton.setText("ON");
-                } else {
-                    compoundButton.setText("OFF");
+                try {
+                    Log.d(TAG, "onChecked: Switch button toggled. Enabling/Disabling Bluetooth");
+                    if (isChecked) {
+                        compoundButton.setText("ON");
+                    } else {
+                        compoundButton.setText("OFF");
+                    }
+
+                    if (myBluetoothAdapter == null) {
+                        Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
+                        Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
+                                .show();
+                        compoundButton.setChecked(false);
+                    } else {
+                        if (!myBluetoothAdapter.isEnabled()) {
+                            Log.d(TAG, "enableDisableBT: enabling Bluetooth");
+                            Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
+
+                            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
+                            startActivity(discoverableIntent);
+
+                            compoundButton.setChecked(true);
+
+                            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+                            registerReceiver(receiverHandleOnOff, BTIntent);
+
+                            IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+                            registerReceiver(receiverHandleScan, discoverIntent);
+                        }
+                        if (myBluetoothAdapter.isEnabled()) {
+                            Log.d(TAG, "enableDisableBT: disabling Bluetooth");
+                            myBluetoothAdapter.disable();
+
+                            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+                            registerReceiver(receiverHandleOnOff, BTIntent);
+                        }
+                    }
+                } catch (Exception e){
+                    Toast.makeText(Bluetooth.this, "Please turn on Bluetooth first!", Toast.LENGTH_SHORT).show();
                 }
 
-                if (myBluetoothAdapter == null) {
-                    Log.d(TAG, "enableDisableBT: Device does not support Bluetooth capabilities!");
-                    Toast.makeText(Bluetooth.this, "Device Does Not Support Bluetooth capabilities!", Toast.LENGTH_LONG)
-                            .show();
-                    compoundButton.setChecked(false);
-                } else {
-                    if (!myBluetoothAdapter.isEnabled()) {
-                        Log.d(TAG, "enableDisableBT: enabling Bluetooth");
-                        Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
-
-                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
-                        startActivity(discoverableIntent);
-
-                        compoundButton.setChecked(true);
-
-                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-                        registerReceiver(receiverHandleOnOff, BTIntent);
-
-                        IntentFilter discoverIntent = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-                        registerReceiver(receiverHandleScan, discoverIntent);
-                    }
-                    if (myBluetoothAdapter.isEnabled()) {
-                        Log.d(TAG, "enableDisableBT: disabling Bluetooth");
-                        myBluetoothAdapter.disable();
-
-                        IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-                        registerReceiver(receiverHandleOnOff, BTIntent);
-                    }
-                }
             }
         });
 
@@ -294,43 +299,48 @@ public class Bluetooth extends AppCompatActivity {
     public void scanForDevices(View view) {
         Log.d(TAG, "scanForDevices(): Scanning for unpaired devices.");
         myNewBTDevices.clear();
-        if (myBluetoothAdapter != null) {
+        try {
+            if (myBluetoothAdapter != null) {
 //            Log.d(TAG, "myBluetoothAdapter != null");
-            if (!myBluetoothAdapter.isEnabled()) {
-                Toast.makeText(Bluetooth.this, "Please turn on Bluetooth first!", Toast.LENGTH_SHORT).show();
-            }
-            if (myBluetoothAdapter.isDiscovering()) {
-                myBluetoothAdapter.cancelDiscovery();
-                Log.d(TAG, "toggleButton: Cancelling Discovery.");
-                checkBTPermissions();
+                if (!myBluetoothAdapter.isEnabled()) {
+                    Toast.makeText(Bluetooth.this, "Please turn on Bluetooth first!", Toast.LENGTH_SHORT).show();
+                }
+                if (myBluetoothAdapter.isDiscovering()) {
+                    myBluetoothAdapter.cancelDiscovery();
+                    Log.d(TAG, "toggleButton: Cancelling Discovery.");
+                    checkBTPermissions();
 
-                myBluetoothAdapter.startDiscovery();
-                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
-            }
-            else if (!myBluetoothAdapter.isDiscovering()) {
-                checkBTPermissions();
+                    myBluetoothAdapter.startDiscovery();
+                    IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                    registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
+                }
+                else if (!myBluetoothAdapter.isDiscovering()) {
+                    checkBTPermissions();
 
-                myBluetoothAdapter.startDiscovery();
-                Log.d(TAG, "startDiscovery() is running");
-                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
-            }
+                    myBluetoothAdapter.startDiscovery();
+                    Log.d(TAG, "startDiscovery() is running");
+                    IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                    registerReceiver(receiverHandleNewDevices, discoverDevicesIntent);
+                }
 
-            myPairedBTDevices.clear();
-            Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
-            Log.d(TAG, "toggleButton: Number of paired devices found: " + pairedDevices.size());
+                myPairedBTDevices.clear();
+                Set<BluetoothDevice> pairedDevices = myBluetoothAdapter.getBondedDevices();
+                Log.d(TAG, "toggleButton: Number of paired devices found: " + pairedDevices.size());
 
-            for (BluetoothDevice d : pairedDevices) {
-                Log.d(TAG, "Paired Devices: " + d.getName() + " : " + d.getAddress());
-                myPairedBTDevices.add(d);
-                myPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view,
-                        myPairedBTDevices);
-                listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
-            }
+                for (BluetoothDevice d : pairedDevices) {
+                    Log.d(TAG, "Paired Devices: " + d.getName() + " : " + d.getAddress());
+                    myPairedBTDevices.add(d);
+                    myPairedDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_adapter_view,
+                            myPairedBTDevices);
+                    listOfPairedDevices.setAdapter(myPairedDeviceListAdapter);
+                }
 
 //            Log.d(TAG, "toggleButton: Number of paired devices found now is: " + pairedDevices.size());
+            }
+        } catch (Exception e){
+            Toast.makeText(Bluetooth.this, "Please turn on Bluetooth first!", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     private void checkBTPermissions() {
