@@ -290,11 +290,11 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                 }
                                 val x = textX.toInt()
                                 val y = textY.toInt()
-                                if (!(x in 2..19 && y in 2..19)) {
+                                if (!(x in 1..18 && y in 1..18)) {
                                     Toast
                                         .makeText(
                                             context,
-                                            "Invalid: Enter a range between 2 and 19!",
+                                            "Invalid: Enter a range between 1 and 18!",
                                             Toast.LENGTH_SHORT
                                         )
                                         .show()
@@ -314,6 +314,7 @@ fun CarDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewModel) 
                                     }
                                     viewModel.previewCar = GridCar(Coord(x, y), carDirectionPreview)
                                     onConfirm()
+                                    println("car ${viewModel.car}")
                                     //sendMessage("ROBOT,${viewModel.previewCar.coord.x},${viewModel.previewCar.coord.x},${viewModel.previewCar.direction}")
                                 }
 

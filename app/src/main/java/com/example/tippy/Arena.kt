@@ -77,10 +77,17 @@ class Arena : AppCompatActivity() {
                             val obstacle_id = valueObject.getString("obstacle_id")
                             val image_id = valueObject.getString("image_id")
                             val toReplaceNumberObstacle = viewModel.obstaclesList.find { it.number == obstacle_id }
+                            lateinit var toAddObstacle: GridObstacle
                             if (toReplaceNumberObstacle != null) {
-                                val toAddObstacle = GridObstacle(toReplaceNumberObstacle.coord, idToCharMap[image_id]!! ,null)
+                                if (idToCharMap.containsKey(image_id)){
+                                    toAddObstacle = GridObstacle(toReplaceNumberObstacle.coord, idToCharMap[image_id]!! ,null)
+                                }
+                                else {
+                                    toAddObstacle = GridObstacle(toReplaceNumberObstacle.coord, "?", null)
+                                }
                                 viewModel.obstaclesList.remove(toReplaceNumberObstacle)
                                 viewModel.obstaclesList.add(toAddObstacle)
+
                             }
                         }
                     }

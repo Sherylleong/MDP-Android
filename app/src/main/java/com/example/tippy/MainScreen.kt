@@ -90,6 +90,7 @@ import androidx.compose.material.*
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui .unit.dp
@@ -112,6 +113,7 @@ fun mixWhite(originalColor: Color): Color {
         alpha = originalColor.alpha
     )
 }
+
 val shadow = 6.dp
 val shadowShape = RoundedCornerShape(20.dp)
 fun startBluetoothStatusChecker(viewModel: MainViewModel) {
@@ -218,7 +220,7 @@ fun Grid(
             val row =  remember { 21 - (index / (columns + 2))}
             val col = remember { index % (columns + 2)}
             val isDark = remember { (row + col) % 2 == 0}
-            val coord = remember { Coord(col, row)}
+            val coord = remember { Coord(col-1, row-1)}
             val hasObstacle = obstaclesList.find { it.coord == coord }
             val number = hasObstacle?.number ?: ""
             val direction = hasObstacle?.direction
@@ -246,7 +248,7 @@ fun Grid(
                         .background(if (draggedOverRow) panColor else Color.Transparent)
                     ){
                         Text(
-                            "$row",
+                            "${coord.y}",
                             textAlign = TextAlign.Center,
                             fontSize = 10.sp,
                             color = Color.White,
@@ -272,7 +274,7 @@ fun Grid(
                     ){
 
 
-                        Text("$col",
+                        Text("${coord.x}",
                             textAlign = TextAlign.Center,
                             fontSize = 10.sp,
                             color = Color.White,
@@ -709,10 +711,11 @@ fun ObstacleDraggable() {
             }
 
             Text(
-                "Add Object (Drag the box!)",
+                "<- Add Object",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(end = 5.dp),
-                color = Color.White
+                color = Color.White,
+                style = TextStyle(shadow = Shadow(color = Color.Black, blurRadius = 100.5f))
 
             )
         }

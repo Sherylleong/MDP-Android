@@ -13,8 +13,8 @@ import androidx.lifecycle.ViewModel
 class MainViewModel : ViewModel() {
     var status by mutableStateOf("Not connected")
     val obstaclesList: MutableList<GridObstacle> = mutableStateListOf()
-    var car: MutableState<GridCar> = mutableStateOf(GridCar(Coord(2,2), "N"))
-    var previewCar: GridCar = GridCar(Coord(2,2), "N")
+    var car: MutableState<GridCar> = mutableStateOf(GridCar(Coord(1,1), "N"))
+    var previewCar: GridCar = GridCar(Coord(1,1), "N")
     var isObstacleDialogShown by mutableStateOf(false)
         private set
     var obstacleDialogMode by mutableStateOf("add")
@@ -39,6 +39,7 @@ class MainViewModel : ViewModel() {
         isObstacleDialogShown = false
     }
     fun displayCarDialog() {
+        previewCar = car.value
         isCarDialogShown = true
     }
 

@@ -254,7 +254,10 @@ fun ObstacleDialog(onDismiss:()->Unit, onConfirm:()->Unit, viewModel: MainViewMo
                                 viewModel.previewObstacle = GridObstacle(viewModel.previewObstacle.coord, text, obstacleDirectionPreview)
                                 //if (viewModel.obstacleDialogMode == "new") sendMessage("ADD,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
                                 //else if (viewModel.obstacleDialogMode == "existing") sendMessage("EDIT,$startingText,${viewModel.previewObstacle.number},${viewModel.previewObstacle.coord.x},${viewModel.previewObstacle.coord.y},$direction")
-                                onConfirm() }) {
+
+                                onConfirm()
+                                println("obstacles ${viewModel.obstaclesList}")
+                            }) {
                             Text("Confirm")
                         }
                         Button(
