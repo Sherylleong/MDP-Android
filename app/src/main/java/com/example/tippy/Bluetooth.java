@@ -128,11 +128,6 @@ public class Bluetooth extends AppCompatActivity {
             bluetoothSwitch.setChecked(true);
             bluetoothSwitch.setText("ON");
         }
-//        TextView connectStatus = findViewById(R.id.connectionStatus);
-//        if(myBluetoothAdapter.isEnabled()){
-//            Log.d(TAG, "NO");
-//            connectStatus.setText("ON");
-//        }
 
         listOfAvailableDevices = findViewById(R.id.list_of_available_devices);
         listOfPairedDevices = findViewById(R.id.list_of_paired_devices);
@@ -224,8 +219,10 @@ public class Bluetooth extends AppCompatActivity {
                     } else {
                         if (!myBluetoothAdapter.isEnabled()) {
                             Log.d(TAG, "enableDisableBT: enabling Bluetooth");
-                            Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
+                            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                            startActivity(enableBtIntent);
 
+                            Log.d(TAG, "enableDisableBT: Making device discoverable for 600 seconds.");
                             Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
                             startActivity(discoverableIntent);
