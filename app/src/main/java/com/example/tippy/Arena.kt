@@ -90,6 +90,12 @@ class Arena : AppCompatActivity() {
 
                             }
                         }
+                        "status" -> {
+                            val value = jsonObject.getString("value")
+                            if (value == "finished") {
+                                viewModel.isTimerRunning = false // Stop the timer when status is finished
+                            }
+                        }
                     }
                 }
                 finally{}

@@ -653,7 +653,7 @@ fun Console(viewModel: MainViewModel) {
 
                             sendObstaclesButton(viewModel)
                             startFastestPathButton(viewModel)
-                            startImageRecButton(viewModel)
+                            //startImageRecButton(viewModel)
                         }
                     }
                 }
@@ -1068,44 +1068,49 @@ fun sendObstaclesButton(viewModel: MainViewModel){
 }
 
 @Composable
-fun startFastestPathButton(viewModel: MainViewModel){
-    Button(onClick = { // start fastest path
-        sendMessage("control", "start", viewModel)
-        viewModel.status = "Running fastest path task"
-        viewModel.isTimerRunning = true
-    },
+fun startFastestPathButton(viewModel: MainViewModel) {
+    Button(
+        onClick = {
+            // Start fastest path
+            sendMessage("control", "start", viewModel)
+            viewModel.status = "Running fastest path task"
+            viewModel.isTimerRunning = true
+        },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),
-        modifier = Modifier.shadow(shadow, shadowShape)
-        //.heightIn(max = 30.dp)
-
-    ){
-        Text("Start Fastest Path",
+        modifier = Modifier
+            .size(100.dp) // Adjust the size to make the button circular
+            .shadow(shadow, CircleShape), // Apply shadow and make the shape circular
+        shape = CircleShape // Set the button shape to circular
+    ) {
+        Text(
+            "START",
             textAlign = TextAlign.Center,
+            fontSize = 15.sp,
             modifier = Modifier
                 .wrapContentHeight()
         )
     }
 }
 
-@Composable
-fun startImageRecButton(viewModel: MainViewModel){
-    Button(onClick = { // start image rec
-        sendMessage("imagerec", "start", viewModel)
-        viewModel.status = "Running image recognition task"
-        viewModel.isTimerRunning = true
-    },
-        colors = ButtonDefaults.buttonColors(containerColor = joyColor),
-        modifier = Modifier.shadow(shadow, shadowShape)
-        //.heightIn(max = 30.dp)
-
-    ){
-        Text("Start Image Rec",
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .wrapContentHeight()
-        )
-    }
-}
+//@Composable
+//fun startImageRecButton(viewModel: MainViewModel){
+//    Button(onClick = { // start image rec
+//        sendMessage("imagerec", "start", viewModel)
+//        viewModel.status = "Running image recognition task"
+//        viewModel.isTimerRunning = true
+//    },
+//        colors = ButtonDefaults.buttonColors(containerColor = joyColor),
+//        modifier = Modifier.shadow(shadow, shadowShape)
+//        //.heightIn(max = 30.dp)
+//
+//    ){
+//        Text("Start Image Rec",
+//            textAlign = TextAlign.Center,
+//            modifier = Modifier
+//                .wrapContentHeight()
+//        )
+//    }
+//}
 
 @Composable
 fun TimerText(viewModel: MainViewModel) {

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -97,12 +99,42 @@ fun CommunicationsTab(viewModel: MessageViewModel, isBluetoothConnected: () -> B
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Display Message History Title
-        Text(
-            text = "Message History:",
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.Black
-        )
+//        // Display Message History Title
+//        Text(
+//            text = "Message History:",
+//            style = MaterialTheme.typography.titleMedium,
+//            color = Color.Black
+//        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween, // Ensures even spacing
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Display Message History Title
+            Text(
+                text = "Message History:",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black
+            )
+
+            // Add a button beside the "Message History" text
+            Button(
+                onClick = {
+                    // Navigate to Bluetooth screen
+                    val bluetoothIntent = Intent(context, Bluetooth::class.java)
+                    context.startActivity(bluetoothIntent)
+                },
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_bluetooth_24), // Replace with your Bluetooth image
+                    contentDescription = "Bluetooth"
+                )
+            }
+        }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
