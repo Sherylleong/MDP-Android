@@ -1073,7 +1073,7 @@ fun startFastestPathButton(viewModel: MainViewModel) {
         onClick = {
             // Start fastest path
             sendMessage("control", "start", viewModel)
-            viewModel.status = "Running fastest path task"
+            viewModel.status = "Running task"
             viewModel.isTimerRunning = true
         },
         colors = ButtonDefaults.buttonColors(containerColor = joyColor),

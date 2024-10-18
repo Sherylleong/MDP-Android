@@ -29,12 +29,12 @@ val idToCharMap: Map<String, String> = mapOf(
     "33" to "X",
     "34" to "Y",
     "35" to "Z",
-    "36" to "Up",
-    "37" to "Down",
-    "38" to "Right",
-    "39" to "Left",
-    "40" to "Circle",
-    "41" to "Bullseye",
+    "36" to "\u2191", // up
+    "37" to "\u2193", // down
+    "38" to "\u2192", // right
+    "39" to "\u2190", // left
+    "40" to "\u25ef", // circle
+    "41" to "\u2b57", // bullseye
     "11" to "1",
     "12" to "2",
     "13" to "3",
