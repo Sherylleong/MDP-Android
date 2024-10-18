@@ -33,7 +33,7 @@ val idToCharMap: Map<String, String> = mapOf(
     "37" to "\u2193", // down
     "38" to "\u2192", // right
     "39" to "\u2190", // left
-    "40" to "\u25ef", // circle
+    "40" to "\u2b24", // circle
     "41" to "\u2b57", // bullseye
     "11" to "1",
     "12" to "2",
@@ -94,6 +94,7 @@ class Arena : AppCompatActivity() {
                             val value = jsonObject.getString("value")
                             if (value == "finished") {
                                 viewModel.isTimerRunning = false // Stop the timer when status is finished
+                                viewModel.status = "Finished run!"
                             }
                         }
                     }

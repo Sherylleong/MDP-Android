@@ -113,20 +113,31 @@ fun CommunicationsTab(viewModel: MessageViewModel, isBluetoothConnected: () -> B
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Display Message History Title
-            Text(
-                text = "Message History:",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Black
-            )
+            Box(
+                modifier = Modifier
+                    .background(Color.White) // Set the background color to yellow
+            ){
+                Text(
+                    text = "Message History:",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black
 
-            // Add a button beside the "Message History" text
+                )
+            }
+
+
+            // Add a bluetooth button beside the "Message History" text
             Button(
                 onClick = {
                     // Navigate to Bluetooth screen
                     val bluetoothIntent = Intent(context, Bluetooth::class.java)
                     context.startActivity(bluetoothIntent)
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = sadColor // Set button background color to blue
+                ),
                 modifier = Modifier.padding(start = 8.dp)
+                            .shadow(shadow, shadowShape)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_bluetooth_24), // Replace with your Bluetooth image
@@ -188,7 +199,7 @@ fun CommunicationsTab(viewModel: MessageViewModel, isBluetoothConnected: () -> B
 
         // Send button
         Button(colors = ButtonDefaults.buttonColors(
-            containerColor = sadColor,
+            containerColor = joyColor,
             contentColor = Color.White,
         ),
             modifier = Modifier.shadow(shadow, shadowShape),

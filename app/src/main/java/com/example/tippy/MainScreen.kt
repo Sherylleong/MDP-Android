@@ -499,6 +499,7 @@ fun Grid(
                                 }
                             }
                         )
+                    , contentAlignment = Alignment.Center
                 ) {
                     Text (
                         number,
@@ -646,11 +647,9 @@ fun Console(viewModel: MainViewModel) {
                         Joystick(viewModel)
                         StatusMessage(viewModel)
                         Column(
-                            verticalArrangement = Arrangement.SpaceAround,
+                            verticalArrangement = Arrangement.SpaceBetween,
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(top=16.dp, bottom = 16.dp)
                         ) {
-
                             sendObstaclesButton(viewModel)
                             startFastestPathButton(viewModel)
                             //startImageRecButton(viewModel)
@@ -725,9 +724,11 @@ fun ObstacleDraggable() {
 
 @Composable
 fun ResetButton(viewModel: MainViewModel) {
+    val context = LocalContext.current
     Button(onClick = {
         viewModel.obstaclesList.clear();
-        viewModel.car.value = GridCar(Coord(2,2), "N")
+        viewModel.car.value = GridCar(Coord(1,1), "N")
+        Toast.makeText(context, "Map saved!", Toast.LENGTH_SHORT).show()
     },
         colors = ButtonDefaults.buttonColors(
             containerColor = anxietyColor,
@@ -1117,14 +1118,20 @@ fun TimerText(viewModel: MainViewModel) {
     var startTime by remember { mutableStateOf(0L) }
     var elapsedTime by remember { mutableStateOf(0L) }
     val isRunning = viewModel.isTimerRunning
+    var isFirstPress by remember { mutableStateOf(true) }
     // Stopwatch logic
+
     LaunchedEffect(isRunning) {
+        if (isFirstPress) {
+            elapsedTime = 0L
+            isFirstPress = false
+        }
         startTime = System.currentTimeMillis() - elapsedTime // Adjust start time
         while (isRunning) {
             elapsedTime = System.currentTimeMillis() - startTime // Calculate elapsed time
             delay(10) // Delay for 10 milliseconds
         }
-
+        isFirstPress = true
     }
     val seconds = (elapsedTime / 1000) % 60
     val minutes = (elapsedTime / 60000) % 60
