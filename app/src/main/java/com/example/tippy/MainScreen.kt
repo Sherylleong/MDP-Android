@@ -728,7 +728,7 @@ fun ResetButton(viewModel: MainViewModel) {
     Button(onClick = {
         viewModel.obstaclesList.clear();
         viewModel.car.value = GridCar(Coord(1,1), "N")
-        Toast.makeText(context, "Map saved!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Map reset!", Toast.LENGTH_SHORT).show()
     },
         colors = ButtonDefaults.buttonColors(
             containerColor = anxietyColor,
