@@ -5,11 +5,8 @@ This repository contains the Android application for the NTU Multidisciplinary D
 ## Key Features
 
 - **Bluetooth Classic Communication**: For communicating with the STM32. Users can select the Bluetooth connection to pair in the Bluetooth menu.
-
 - **Map setting**: Using intuitive drag and drop functionality, users can insert obstacles into the map and determine their facing.
-
 - **Real-Time Control**: Manually control the robot through a joystick interface for specific tasks.
-
 - **Real-Time Feedback**: The application continuously receives feedback from the robot, including data on its current position, time elapsed, pathfinding status, and image recognition results, all of which are displayed on the Android interface.
 
 ## Technologies Used
