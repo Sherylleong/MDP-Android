@@ -12,8 +12,8 @@ This repository contains the Android application for the NTU Multidisciplinary D
 
 ## Images
 <img src="images/menu_screen.jpg" alt="Menu Image" width="300"/>
-<img src="images/map_screen" alt="Map Image" width="300"/>
-<img src="images/map_popup" alt="Map Popup Image" width="300"/>
+<img src="images/map_screen.jpg" alt="Map Image" width="300"/>
+<img src="images/map_popup.jpg" alt="Map Popup Image" width="300"/>
 
 ## Technologies Used
 
