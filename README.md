@@ -11,9 +11,10 @@ This repository contains the Android application for the NTU Multidisciplinary D
 - **Real-Time Feedback**: The application continuously receives feedback from the robot, including data on its current position, time elapsed, pathfinding status, and image recognition results, all of which are displayed on the Android interface.
 
 ## Images
-![Menu Image](images/menu_screen.jpg)
-![Map Image](images/map_screen.jpg)
-![Map Popup Image](images/map_popup.jpg)=
+<img src="images/menu_screen.jpg" alt="Menu Image" width="300"/>
+<img src="images/map_screen" alt="Map Image" width="300"/>
+<img src="images/map_popup" alt="Map Popup Image" width="300"/>
+
 ## Technologies Used
 
 - **Android SDK**: The app is built using **Android Studio** and the native **Android SDK**, providing a responsive and efficient user interface.
